@@ -10,7 +10,7 @@ TOKEN="5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI" #Token
 
 # After the alert is set
 # Press Ctrl Z then type bg
-# To list all running notifications type jobs.
+# To list all running Alerts type jobs.
 
 def start_timer():
     header = 17 * "-" + "TIME REMINDER!" + 17 * "-"
