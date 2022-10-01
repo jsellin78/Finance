@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-// Fix protocol 4.4 Example
+// Financial Information eXchange protocol 4.4 Example
 
 namespace FIX_API_Sample
 {
