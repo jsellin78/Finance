@@ -10,6 +10,9 @@ TOKEN="" #BotToken
 
 # Python timer that Sends alerts to your telegram in a specific time.
 
+# Works for Windows and Linux
+
+# On Debian Gnu
 # After the alert is set
 # Press Ctrl Z then type bg
 # To list all running Alerts type jobs.
