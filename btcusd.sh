@@ -44,7 +44,7 @@ if [[ (($nowclose -lt $prevclose)) ]] ; then #Then we know this is a bearish Can
         low=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.Low' | cut -c -5) #Low of candle
         nowclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.Close' | cut -c -5) #this bar close.
         #time1=$(awk '{if(NR==8) print $0}' /tmp/close/16x/gbpjpy.txt | cut -c -10)
-        prevclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.Open' | cut -c -5) #previous hourly close #previous hourly close
+        prevclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.Open' | cut -c -5) #previous close
         upwiq=$(expr \( $prevclose - $low \)) #previous close - bar low
         downwiq=$(expr \( $high - $nowclose \)) #high - close
         body=$(expr \( $nowclose - $prevclose \))
