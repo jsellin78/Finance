@@ -158,7 +158,7 @@ namespace cAlgo.Robots
 
                 using (var client = new HttpClient())
                 {
-                    var endpoint = new Uri("http://192.168.1.204:9095/posts"); //Send Prices to your http Server
+                    var endpoint = new Uri("http://192.168.1.204:9095/posts"); //Send Prices to your http Server if remote you need public ip addres
                     var newPost = new Post
                     {
                         Time = DateTime.Now.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm"),
