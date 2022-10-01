@@ -2,10 +2,15 @@ time1=$(( 10#$time1 ))
     #2>&1 means that stderr is redirected to stdout
     #3>&- means that file descriptor 3, opened for writing(same as stdout), is closed.
 
+#Strategy based on realtime processing of CandleSticks. 
+#This is a Strategy based on Time and the width & height pattern of the candlesticks 
+# It is discontinued.
+# Still a very powerful way to know where the direction of where the market is going. 
+
 exec 4</tmp/eurusd.txt
-IFS= read -ru4 body #body
-IFS= read -ru4 c #high green
-IFS= read -ru4 d #low red
+IFS= read -ru4 body #Body
+IFS= read -ru4 c #Uppköpt Candle green
+IFS= read -ru4 d #Nedköpt Candle red
 IFS= read -ru4 time1
 exec 4<&-
 
