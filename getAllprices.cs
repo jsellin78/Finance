@@ -20,7 +20,7 @@ namespace cAlgo.Robots
         public object Low { get; private set; }
         public object Close { get; private set; }
 
-        Bars BTCUSD_t6; //TimeFrame you want the prices in, All Currencies / Index / Commodoties & Energies supported for free!!!
+        Bars BTCUSD_t6; //TimeFrame you want the prices in, All Currencies / Index / Commodoties & Energies supported for free!!
 
         Symbol gbpjpy;
         Symbol gbpusd;
