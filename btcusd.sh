@@ -4,7 +4,6 @@ export TERM
 GREEN="$(tput setaf 2)"
 RED="$(tput setaf 1)"
 NOCOLOR="$(tput sgr0)"
-date1=$(date +%Y-%m-%d) #Today
 
 filelength=$(wc -l /tmp/btcusd_min.txt | awk '{ print $1 }') #Take The last line in file.
 prevclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.PrevClose' | cut -c -5) #previous bar close
