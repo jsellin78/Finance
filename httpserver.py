@@ -9,7 +9,8 @@ import json
 import html
 
 #How to run
-# python3 ./httpserver.py ipaddr port
+# Usage: python3 ./httpserver.py ipaddr port
+# To run remote you need public ipv4 addr. 
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
