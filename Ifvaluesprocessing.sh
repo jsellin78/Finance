@@ -5,7 +5,7 @@ time1=$(( 10#$time1 ))
 #Strategy based on realtime processing of CandleSticks. 
 #This is a Strategy based on Time and the width & height pattern of a candlestick. 
 # It is discontinued.
-# Still it is a very powerful way to know where the direction of where the market is going.
+# Still it is a very powerful way to know where the direction of where the market is going. Especially if do this on multiple CandleSticks. 
 # If pattern matches you could pipe the result to a specific screen to gather all the results in one place for further processing.
 # Sending data to Screen "minute" in this case.
 # bash -c 'tmux send-keys -t minute /files/ifvalueminute/ifvaluebtcusdminute.sh' &"
@@ -343,4 +343,4 @@ if (( c >= 15 && c<= 4000 && d >= 0 && d <= 3 && body >= 20)); then
 
 if (( c >= 0 && c<= 3 && d >= 15 && d <= 4000 && body >= 20)); then
  bash -c "/files/telegrambot.sh 'Inverted hammer! Created on eurusd at $time1 $nl upwiq $c $nl dwnwiq $d $nl body $body'"
-
+fi;
