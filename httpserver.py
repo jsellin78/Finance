@@ -8,6 +8,9 @@ import subprocess
 import json
 import html
 
+#How to run
+# python3 ./httpserver.py ipaddr port
+
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
 
@@ -23,8 +26,8 @@ class S(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         post = post_data.decode('utf-8')
         post1 = post.strip("\'")
-        with open("/tmp/btcusd.txt",'a', encoding='utf-8') as fd: #Put all incoming data from the http-server in a txt file Line by Line always for further proccessing.
-              fd.write(str(post1 + '\n')) #When http server recives data this Command notices it, and runs btcusd1.sh  # inotifywait -m -e close_write /tmp/btcusd.txt --format --quiet | while read -r dir; do /files/ifvalueminute/btcusd1.sh ENTER; sleep 2; /files/ifvalueminute/ifvaluebtcusdminute.sh; done
+        with open("/tmp/btcusd.txt",'a', encoding='utf-8') as fd: #Put all incoming data from the http-server in the temp directory. Always append to last line of the file for further proccessing.
+              fd.write(str(post1 + '\n')) 
               print(str(post1))
               self._set_response()
 
