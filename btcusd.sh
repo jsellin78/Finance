@@ -8,7 +8,6 @@ NOCOLOR="$(tput sgr0)"
 #To make this run nonstop and always recive the latest value from the http-server we use this command
 # inotifywait -m -e close_write /tmp/btcusd_min.txt --format --quiet | while read -r dir; do /files/ifvalueminute/btcusd.sh ENTER; sleep 2; tmux send-keys -t ifvalues /files/ifvalueminute/ifvaluebtcusdminute.sh ENTER; done &
 
-
 filelength=$(wc -l /tmp/btcusd_min.txt | awk '{ print $1 }') #Grab The last line in file.
 prevclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.PrevClose' | cut -c -5) #previous bar close
 nowclose=$(awk '{if(NR=='$filelength') print $0}' /tmp/btcusd_min.txt | jq '.Close' | cut -c -5) #this bar close.
