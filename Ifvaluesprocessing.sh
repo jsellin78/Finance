@@ -5,7 +5,7 @@ time1=$(( 10#$time1 ))
 #Strategy based on realtime processing of CandleSticks. 
 #This is a Strategy based on Time and the width & height pattern of a candlestick. 
 # It is discontinued.
-# it provides a very powerful way to know where the direction of where the market is going. Especially if do this on multiple CandleSticks. 
+# it provides a very powerful way to know where the direction of where the market is going. Especially if you have a system to do this on multiple CandleSticks. 
 # I recommend you to be convervative about the values you put. And that you implement this on multiple candlesticks for best results. 
 
 exec 4</tmp/eurusd.txt
