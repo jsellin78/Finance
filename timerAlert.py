@@ -8,6 +8,8 @@ import subprocess
 chat_id="" #Enter Telegramchat_id
 TOKEN="" #BotToken
 
+# Python timer that Sends alerts to your telegrambot in a specific time.
+
 # After the alert is set
 # Press Ctrl Z then type bg
 # To list all running Alerts type jobs.
