@@ -5,10 +5,8 @@ time1=$(( 10#$time1 ))
 #Strategy based on realtime processing of CandleSticks. 
 #This is a Strategy based on Time and the width & height pattern of a candlestick. 
 # It is discontinued.
-# Still it is a very powerful way to know where the direction of where the market is going. Especially if do this on multiple CandleSticks. 
-# If pattern matches you could pipe the result to a specific screen to gather all the results in one place for further processing.
-# Sending data to Screen "minute" in this case.
-# bash -c 'tmux send-keys -t minute /files/ifvalueminute/ifvaluebtcusdminute.sh' &"
+# it provides a very powerful way to know where the direction of where the market is going. Especially if do this on multiple CandleSticks. 
+# I recommend you to be convervative about the values you put. And that you implement this on multiple candlesticks for best results. 
 
 exec 4</tmp/eurusd.txt
 IFS= read -ru4 body #Body
