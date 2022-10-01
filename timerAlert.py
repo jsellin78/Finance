@@ -5,8 +5,8 @@ import requests
 import os
 import subprocess
 
-chat_id="2012646742" #Enter Telegramchat_id
-TOKEN="5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI" #Token
+chat_id="" #Enter Telegramchat_id
+TOKEN="" #BotToken
 
 # After the alert is set
 # Press Ctrl Z then type bg
