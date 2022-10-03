@@ -12,14 +12,6 @@ namespace cAlgo.Robots
     [Robot(TimeZone = TimeZones.WEuropeStandardTime, AccessRights = AccessRights.FullAccess)]
     public class Testbot : Robot
     {
-        [Parameter(DefaultValue = 0.0)]
-        public double Parameter { get; set; }
-        public object PrevClose { get; private set; }
-        public object Open { get; private set; }
-        public object High { get; private set; }
-        public object Low { get; private set; }
-        public object Close { get; private set; }
-
         Bars BTCUSD_t6; //TimeFrame you want the prices in, All Currencies / Index / Commodoties & Energies supported for free!!
 
         Symbol gbpjpy;
