@@ -1,7 +1,7 @@
 #!/bin/bash
 
-GROUP_ID=2012646742 #ChatID
-BOT_TOKEN=5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI #Token
+GROUP_ID= #ChatID
+BOT_TOKEN= #Token
 
 # Send text message this way. For newline between messages add nl=$'\n'
 # bash -c "/files/telegrambot.sh 'Hello $nl There!'"
