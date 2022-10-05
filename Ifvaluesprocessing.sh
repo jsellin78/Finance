@@ -52,7 +52,7 @@ elif (( c >= 0 && c<= 4 && d >= 0 && d <= 30 && body >= 8 && body <= 25)); then
 # \33[2K deletes the currnt line
 # \r moves the cursor to the start of the current line
 # %s prints the specified characters
-# \n moves to the next line (otherwise the hello would be at the start of the next command prompt line in ther terminal)
+# \n moves to the next line (otherwise the data would be at the start of the next command prompt line in ther terminal)
 
 
 
