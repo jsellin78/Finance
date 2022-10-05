@@ -10,7 +10,9 @@ import html
 
 #How to run
 # Usage: python3 ./httpserver.py ipaddr port
-# To run remote you need public ipv4 addr. 
+# If you have public ip and want to run remote
+# you can sudo apt-get install miniupnpc 
+# upnpc -r 8080 tcp
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
