@@ -6,8 +6,8 @@ time1=$(( 10#$time1 ))
 
 exec 4</tmp/btcusd.txt
 IFS= read -ru4 body #body
-IFS= read -ru4 c #high green #uppkopt
-IFS= read -ru4 d #low red #nedkopt
+IFS= read -ru4 c #high green #Nedköpt
+IFS= read -ru4 d #low red #Uppköpt
 IFS= read -ru4 time1
 exec 4<&-
 
