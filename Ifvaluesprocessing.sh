@@ -46,3 +46,13 @@ elif (( c >= 0 && c<= 4 && d >= 0 && d <= 30 && body >= 8 && body <= 25)); then
  tmux send-keys -t ifvalues "printf '\033[A\33[2K\r%s\n' 'Pattern Candle 7, Confirmed Created US30 on $time1'" Enter
  bash -c "/files/telegrambot.sh 'timeframe minute, Pattern we are looking for 7. Candle Created on us30 at $time1 $nl Nedkopt $c $nl Uppkopt $d $nl body $body'"
  fi;
+
+
+# \033[A makes printf go up a line (to the line showing the input command)
+# \33[2K deletes the currnt line
+# \r moves the cursor to the start of the current line
+# %s prints the specified characters
+# \n moves to the next line (otherwise the hello would be at the start of the next command prompt line in ther terminal)
+
+
+
