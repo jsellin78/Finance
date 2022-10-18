@@ -9,7 +9,7 @@ IFS= read -ru4 body #body
 IFS= read -ru4 c #high green #Nedkopt
 IFS= read -ru4 d #low red #Uppkopt
 IFS= read -ru4 time1
-IFS= read -ru4 b
+IFS= read -ru4 b #Bearish or Bullish
 exec 4<&-
 
 if (( c >= 0 && c<= 3 && d >= 13 && d <= 30 && body >= 13 && body <= 30)) && [[ b == "Bullish Candle" ]]; then
