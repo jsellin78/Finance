@@ -16,11 +16,11 @@ namespace FIX_API_Sample
         private int _pricePort = 5211;
         private int _tradePort = 5212;
 
-        private string _host = "h28.p.ctrader.com";
-        private string _username = "3006156";
-        private string _password = "sp0tw@re";
-        private string _senderCompID = "sales.3006156";
-        private string _senderSubID = "3006156";
+        private string _host = "";
+        private string _username = "";
+        private string _password = "";
+        private string _senderCompID = "";
+        private string _senderSubID = "";
 
         private string _targetCompID = "CSERVER";
 
