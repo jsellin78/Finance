@@ -5,9 +5,9 @@ file2="/tmp/cadjpy155.txt" #Data Values
 file3="/files/19x/cadjpy/15min.json" #Unsorted time of the day always the same numbers.
 file4="/files/19x/cadjpy/15min2.json" #Sorted time of the day, depending on what the user types
 file5="/files/19x/cadjpy/15min3.json"
-x1="/files/19x/cadjpy/candlestick1.py"
-x2="/files/19x/cadjpy/candlestick2.py"
-x3="/files/19x/cadjpy/candlestick3.py"
+x1="/files/19x/cadjpy/candlestick1.py" #Pattern1
+x2="/files/19x/cadjpy/candlestick2.py" #Pattern2
+x3="/files/19x/cadjpy/candlestick3.py" #Pattern3 
 
 truncate -s 0 $file4;
 
@@ -45,7 +45,7 @@ if [[ -z $x ]] ; then #if 16x is empty
    high=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x1 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap16 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742'
+   curl -F "photo=@$image" -F "caption=$cap16 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=chatid'
    #gcalcli --calendar '15_min' add --title "16x $sentiment 15 min" --where "$now" --when "$t1" --duration 60 --description 'It is going to be hard!' --reminder 1 --who 'proactive1993@gmail.com'
 else
    t6=$(awk '{if(NR==16) print $0}' $file4 | sed -e ':a;s/^.\{0,3\}$/0&/;ta')
@@ -66,7 +66,7 @@ else
    high=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x1 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap16 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742' > /dev/null
+   curl -F "photo=@$image" -F "caption=$cap16 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=chatid' > /dev/null
    fi;
 
 if [[ -z $xx ]] ; then #if 19x is empty
@@ -95,7 +95,7 @@ if [[ -z $xx ]] ; then #if 19x is empty
    high=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low=$(awk '{if(NR=='$filelength') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x2 $open1 $close1 $high1 $low1 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap19 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742' > /dev/null
+   curl -F "photo=@$image" -F "caption=$cap19 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=2012646742' > /dev/null
    #gcalcli --calendar '15_min' add --title "19x $sentiment 15 min" --where "$now" --when "$t1" --duration 60 --description 'It is going to be hard!' --reminder 1 --who 'proactive1993@gmail.com'
 else
    t6=$(awk '{if(NR==19) print $0}' $file4 | sed -e ':a;s/^.\{0,3\}$/0&/;ta')
@@ -122,7 +122,7 @@ else
    high1=$(awk '{if(NR=='$Sec') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low1=$(awk '{if(NR=='$Sec') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x2 $open1 $close1 $high1 $low1 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap19 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742' > /dev/null
+   curl -F "photo=@$image" -F "caption=$cap19 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=2012646742' > /dev/null
    fi
 
 if [[ -z $xxx ]] ; then #if 22x is empty
@@ -155,7 +155,7 @@ if [[ -z $xxx ]] ; then #if 22x is empty
    high3=$(awk '{if(NR=='$Three') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low3=$(awk '{if(NR=='$Three') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x3 $open3 $close3 $high3 $low3 $open2 $close2 $high2 $low2 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap23 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742' > /dev/null
+   curl -F "photo=@$image" -F "caption=$cap23 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=2012646742' > /dev/null
 else
    t6=$(awk '{if(NR==22) print $0}' $file4 | sed -e ':a;s/^.\{0,3\}$/0&/;ta')
    year=$(date +%Y)
@@ -184,7 +184,7 @@ else
    high3=$(awk '{if(NR=='$Three') print $0}' $file2 | jq '.High' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    low3=$(awk '{if(NR=='$Three') print $0}' $file2 | jq '.Low' | sed -e ':a;s/^.\{0,5\}$/&0/;ta')
    python3 $x3 $open3 $close3 $high3 $low3 $open2 $close2 $high2 $low2 $open $close $high $low $image
-   curl -F "photo=@$image" -F "caption=$cap23 at $t2" 'https://api.telegram.org/bot5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI/sendphoto?chat_id=2012646742' > /dev/null
+   curl -F "photo=@$image" -F "caption=$cap23 at $t2" 'https://api.telegram.org/botapikey/sendphoto?chat_id=2012646742' > /dev/null
    #echo "alert is set for" $t2
    #gcalcli --calendar '15_min' add --title "22x $sentiment 15 min" --where "$now" --when "$t2" --duration 60 --description 'It is going to be hard!' --reminder 1 --who 'proactive1993@gmail.com'
    fi
