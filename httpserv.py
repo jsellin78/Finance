@@ -10,9 +10,6 @@ import html
 
 #How to run
 # Usage: python3 ./httpserver.py ipaddr port
-# If you have public ip and want to run remote
-# you can sudo apt-get install miniupnpc 
-# upnpc -r 8080 tcp
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
@@ -29,7 +26,7 @@ class S(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         post = post_data.decode('utf-8')
         post1 = post.strip("\'")
-        with open("/tmp/btcusd.txt",'a', encoding='utf-8') as fd: #Put all incoming data from the http-server in the temp directory. Always append to last line of the file for further proccessing.
+        with open("/tmp/cadjpy.txt",'a', encoding='utf-8') as fd: #Always append to last line of file.
               fd.write(str(post1 + '\n')) 
               print(str(post1))
               self._set_response()
