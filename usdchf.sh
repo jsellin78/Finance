@@ -4,11 +4,8 @@ export TERM
 GREEN="$(tput setaf 2)"
 RED="$(tput setaf 1)"
 NOCOLOR="$(tput sgr0)"
-#date1=$(date -d yesterday +%Y-%m-%d) #Yesterday
-#date1=$(date +2022-05-09)
+
 date1=$(date +%Y-%m-%d) #Today
-#date2=$(date -d yesterday +%Y-%m-%d) #Yesterday
-#date2="$(date -d @$time1)+2 hours"
 
 truncate -s 0 /tmp/usdchf.txt;
 
