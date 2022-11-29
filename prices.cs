@@ -12,7 +12,7 @@ namespace cAlgo.Robots
     [Robot(TimeZone = TimeZones.WEuropeStandardTime, AccessRights = AccessRights.FullAccess)]
     public class Testbot : Robot
     {
-        Bars BTCUSD_t6; //TimeFrame you want the prices in, All Currencies / Index / Commodoties & Energies supported for free!!
+        Bars BTCUSD_t6; //TimeFrame you want the prices in
 
         Symbol gbpjpy;
         Symbol gbpusd;
@@ -150,7 +150,7 @@ namespace cAlgo.Robots
 
                 using (var client = new HttpClient())
                 {
-                    var endpoint = new Uri("http://192.168.1.204:9095/posts"); //Send Prices to your http Server if remote you need public ip addres
+                    var endpoint = new Uri("http://192.168.1.204:9095/posts"); //Endpoint 
                     var newPost = new Post
                     {
                         Time = DateTime.Now.AddMinutes(-1).ToString("yyyy-MM-dd HH:mm"),
