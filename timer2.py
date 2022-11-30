@@ -9,8 +9,8 @@ import datetime
 import threading
 import requests
 
-chat_id="2012646742" #Enter Telegramchat_id
-TOKEN="5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI" #Token
+chat_id="" #Enter Telegramchat_id
+TOKEN="" #Token
 
 def start_timer():
     year = int(sys.argv[1])
