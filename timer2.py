@@ -9,8 +9,6 @@ import datetime
 import threading
 import requests
 
-chat_id="" #Enter Telegramchat_id
-TOKEN="" #Token
 
 def start_timer():
     year = int(sys.argv[1])
@@ -19,7 +17,7 @@ def start_timer():
     hour = int(sys.argv[4])
     minute = int(sys.argv[5])
     startTime = datetime.datetime(year, month, day, hour, minute)
-    print (" ~~> Telegram Alert is set for:{}".format(startTime))
+    print (" ~~> Alert is set for:{}".format(startTime))
     while datetime.datetime.now() < startTime:
         time.sleep(1)
     print('Time\'s up')
