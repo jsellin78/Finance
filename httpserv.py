@@ -26,7 +26,7 @@ class S(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         post = post_data.decode('utf-8')
         post1 = post.strip("\'")
-        with open("/tmp/cadjpy.txt",'a', encoding='utf-8') as fd: #Always append to last line of file.
+        with open("/tmp/prices.txt",'a', encoding='utf-8') as fd: #Always append to last line of file.
               fd.write(str(post1 + '\n')) 
               print(str(post1))
               self._set_response()
