@@ -49,7 +49,7 @@ namespace cAlgo.Robots
                     var newPost = new Post()
                     {
                         Time = DateTime.Now.AddMinutes(45).ToString("yyyy-MM-dd HH:mm"),
-                        Currency = "usdjpy",
+                        Currency = "USDJPY",
                         PrevClose = Bars.ClosePrices.Last(2),
                         Close = Bars.ClosePrices.Last(1),
                         Open = Bars.OpenPrices.Last(1),
@@ -59,15 +59,7 @@ namespace cAlgo.Robots
                  var newPostJson = JsonConvert.SerializeObject(newPost);
                  var payload = new StringContent(newPostJson, Encoding.UTF8, "application/json");
                  var result = client.PostAsync(endpoint, payload).Result.Content.ReadAsStringAsync().Result;
-                 //{"PrevClosePrice", string.Format("PrevClose: {0} | Open; {1} | High; {2} | Low; {3} | Close; {4}", Bars.ClosePrices.Last(2), Bars.OpenPrices.Last(1), Bars.HighPrices.Last(1), Bars.LowPrices.Last(1), Bars.ClosePrices.Last(1))},
-                 //{"OpenPrice", Bars.OpenPrices.Last(1).ToString()},
-                };
-                //var res = await client.PostAsync(url, new FormUrlEncodedContent(data));
-                //var content = await res.Content.ReadAsStringAsync();
-                //Console.WriteLine(content);
-                //record Person(string Name, string Occupation  );
-
-                //name = ",Bars.ClosePrices.Last(2), Bars.OpenPrices.Last(1), Bars.HighPrices.Last(1), Bars.LowPrices.Last(1), Bars.ClosePrices.Last(1));"
+        
             }
         }
     }
