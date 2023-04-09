@@ -5,49 +5,27 @@
  
   #web:tws 
   tasks:
-    - name: Install basic packages for Debian
-      tags: installdebian
+    - name: Setup enviroment for specific host 
+      tags: enviroment
       block:
         - include_vars:
             file: 'vars1.yaml' 
         - include_role:
-            name: 'roles/install_basic_packages'
+            name: 'roles/enviroment.yml'
 
-    - name: install basic packages for Centos
-      tags: installcentos
+    - name: setup kvm-bridge for specific host 
+      tags: bridge
       block:
         - include_vars:
             file: 'vars2.yaml'
         - include_role:
-            name: 'roles/install_basic_packages_centos'
+            name: 'roles/bridge.yml'
 
-    - name: Monitor temp cpu for specific target 
-      tags: monitor
+    - name: Setup Nextcloud for specific host 
+      tags: nextcloud 
       block:
         - include_vars:
             file: 'vars2.yaml'
         - include_role:
-            name: 'roles/monitor_temp_cpu'
-
-    - name: Copy over License file to specied host #BE CAREFUL CHECK UR DOWNLOADFOLDER MAKE SURE YOU ONLY HAVE ONE LICENSE FILE. USE LIMIT AND DOUBLE CHECK THE VARS FOLDER BEFORE RUNNING.                
-      tags: license
-      block: 
-        - include_vars:
-            file: 'vars3.yaml' 
-        - include_role:
-            name: 'roles/licenselic'
-     
-    - name: Move 8.5 packages to tmp dir unpack then specify their locations 
-      tags: Pack_8.5 
-      block: 
-        - include_vars: 
-            file: 'vars.yaml' 
-        - include_role: 
-             name: roles/filepath_8.5
-
-
-# Either run this playbook as this, and specify host in this file  
-# ansible-playbook roles/upgrade_server/tasks/main.yaml --tags monitor
-# Or run from inventory and specify web:tws in this hosts file  
-# ansible-playbook -i hosts_testing/hosts_test-dev.yaml roles/upgrade_server/tasks/main.yaml --tags monitor
+            name: 'roles/nextcloud.yml'
 
