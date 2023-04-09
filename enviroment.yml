@@ -1,60 +1,9 @@
 ---
-- name: download node
+- name: Install the required packages 
   hosts: root
+  gather_facts: true   
   tasks:
   -  include_vars: vars.yml
-
-  - name: Create folder 
-    ansible.builtin.file:
-      path: '{{ item }}' 
-      owner: root 
-      mode: '0755'
-      state: directory  
-    with_items: 
-      - '/etc/ansible'
-      - '~/.config/nvim'
-      - '~/.config/gtk-3.0'  
-
-  - name: unarchive lua 
-    tags: lua
-    ansible.builtin.unarchive:
-      src: http://www.lua.org/ftp/lua-5.4.4.tar.gz
-      dest: /root/
-      remote_src: yes
-
-  - name: build lua binaries
-    tags: buildlua
-    shell: >
-      cd ~/lua-5.4.4 && make linux test; sudo make install 
-    register: targ
-   
-  - debug: var=targ.stdout_lines
-
-
-  - name: Make sure /etc/localtime is absent  
-    tags: localtime 
-    ansible.builtin.file:
-      path: /etc/localtime
-      state: absent 
-    
-  - name: Create a Symbolic link between Correct TimeZone and /etc/localtime    
-    tags: symlink1 
-    ansible.builtin.file:
-      src: /usr/share/zoneinfo/Europe/Stockholm
-      dest: /etc/localtime 
-      state: link 
-      force: yes 
-
-  - name: Prevent relese file from complaining       
-    shell: > 
-      timedatectl set-local-rtc 0
-    become: yes
-
-  - name: Prevent agen 
-    shell: > 
-      apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update
-    become: yes   
-
 
   - name: install all the required Neovim build modules
     apt:
@@ -95,14 +44,95 @@
         - default-jre  
         - default-jdk  
         - xbindkeys
-        - miniupnpc   
+        - miniupnpc
+        - i3  
+        - picom  
+        - libcurl4-openssl-dev
+        - libx11-dev
+        - libimlib2-dev
+        - libxinerama-dev
+        - libjpeg-progs
+        - pavucontrol
+        - pulseaudio
+        - rofi 
+        - dbus-x11 
+        - libnotify-bin
+        - i3blocks 
+        - maim  
+      
       state: present    
 
+  - name: Create folder
+    tags: folder1
+    ansible.builtin.file:
+      path: '{{ item }}' 
+      owner: root 
+      mode: '0755'
+      state: directory  
+    with_items: 
+      - '/etc/ansible'
+      - '~/.config/nvim'
+      - '~/.config/gtk-3.0' 
+      - '/root/.local/share/rofi/themes/'
+      - '/root/.config/i3/'
+      - '/root/Pictures'
+      - '/root/.config/rofi'
+      - '/root/.config/i3blocks'  
+
+
+  - name: copy over config folder
+    tags: cp
+    synchronize:
+      src: ~/Pictures/
+      dest: ~/Pictures/ 
+      mode: push
+
+  - name: unarchive lua 
+    tags: lua
+    ansible.builtin.unarchive:
+      src: http://www.lua.org/ftp/lua-5.4.4.tar.gz
+      dest: /root/
+      remote_src: yes
+
+  - name: build lua binaries
+    tags: buildlua
+    shell: >
+      cd ~/lua-5.4.4 && make linux test; sudo make install 
+    register: targ
+   
+  - debug: var=targ.stdout_lines
+
+  - name: Make sure /etc/localtime is absent  
+    tags: localtime 
+    ansible.builtin.file:
+      path: /etc/localtime
+      state: absent 
+    
+  - name: Create a Symbolic link between Correct TimeZone and /etc/localtime    
+    tags: symlink1 
+    ansible.builtin.file:
+      src: /usr/share/zoneinfo/Europe/Stockholm
+      dest: /etc/localtime 
+      state: link 
+      force: yes 
+
+  - name: Prevent relese file from complaining       
+    shell: > 
+      timedatectl set-local-rtc 0
+    become: yes
+
+  - name: Prevent agen 
+    shell: > 
+      apt-get -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false update
+    become: yes   
+
+
+ 
   - name: Clone neovim repo
     ansible.builtin.git:
       repo: https://github.com/neovim/neovim
       dest: /root/neovim
-      clone: yes
+    ignore_errors: true 
 
 
   - name: Build Neovim with cmake
@@ -325,76 +355,6 @@
     shell: > 
      chsh -s /bin/zsh
 
-  - name: Add ansible-language-server 
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall ansible-language-server" +qa
-
-  - name: Add aws-language-server
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall awk-language-server" +qa
- 
-  - name: Add bash-debug-adapter
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall bash-debug-adapter" +qa
-
-  - name: Add diagnostic-languageserver
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall diagnostic-languageserver" +qa
-
-  - name: Add lint flake8  
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall flake8" +qa
-
-  - name: Add jedi-language-server
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall jedi-language-server" +qa
-
-  - name: Add jq language-server 
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall jq" +qa
-
-  - name: Add lua-language-server
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall lua-language-server" +qa
-
-  - name: Add pyright 
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall pyright" +qa
-
-  - name: Add python-lsp-server 
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall python-lsp-server" +qa
-
-  - name: Add shell-check language-server 
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall shellcheck" +qa
-    
-  - name: Add yaml-language-server
-    tags: lang 
-    shell: >
-      nvim --headless "+:MasonInstall yaml-language-server" +qa
-      
-  - name: Add yamlint language server 
-    tags: yamllint 
-    shell: >
-      nvim --headless "+:MasonInstall yamllint" +qa
- 
-  - name: Source and install the vim plugins 
-    tags: vims 
-    shell: nvim --headless -c +source ~/.config/nvim/lua/core/plugin_config/init.vim +PlugUpdate +qa
-
-
   - name: Install Go  
     tags: go 
     ansible.builtin.unarchive:
@@ -488,14 +448,28 @@
       npm i -g bash-language-server
 
   - name: Create config file for paste button and for xbindkeys  
-    tags: file3 
+    tags: file5 
     ansible.builtin.file:
       path: '{{ item }}' 
       state: touch    
       mode: u+rw,g-wx,o-rwx
     with_items: 
       - '/root/.config/gtk-3.0/settings.ini'  
-      - '/root/.xbindkeysrc'  
+      - '/root/.xbindkeysrc'
+      - '~/.config/picom.conf'
+      - '/etc/systemd/system/pulseaudio.service'
+      - '/root/.config/rofi'
+      - '/root/.xinitrc'
+      
+  - name: Add configs to xinitrc  
+    tags: xinitrc 
+    ansible.builtin.lineinfile:
+      path: /root/.xinitrc
+      line: '{{ item }}'
+    with_items: 
+      - 'picom -b --config ~/.config/picom.conf'
+      - 'i3-msg restart > /dev/null; echo "restarting i3 config"'
+
 
   - name: Make so that we can paste with the middle mouse button 
     tags: line2
@@ -561,14 +535,13 @@
     with_items: 
       - '[Unit]' 
       - 'Description=Example systemd service.'
-      
+     
       - '[Service]'
       - 'Type=simple' 
       - 'ExecStart=/bin/bash /var/startup.sh'
      
       - '[Install]' 
       - 'WantedBy=multi-user.target'
-      
 
   - name: populate startup script the the port conf  
     tags: startup 
@@ -577,6 +550,7 @@
       line: '{{ item }}'
     with_items: 
       - 'upnpc -r {{ port.stdout }} tcp'
+      - 'picom &'  
 
   - name: Start service
     tags: service12
@@ -618,4 +592,287 @@
     authorized_key: user={{ rootuser.stdout }} key="{{item}}"
     with_file:
       - ~/.ssh/id_rsa.pub 
+ 
+  - name: Update Packer    
+    tags: update123 
+    shell: > 
+      tmux send-keys -t source123 "nvim +PackerUpdate" Enter Enter
+
+  - name: Kill Window
+    tags: q1 
+    shell: > 
+      tmux send-keys -t source123 "" :qa Enter 
+
+  - name: Compile Packer 
+    tags: compile123 
+    shell: > 
+      tmux send-keys -t source123 "nvim +PackerCompile" Enter Enter 
+
+  - name: Kill Window
+    tags: q2 
+    shell: > 
+      tmux send-keys -t source123 "" :qa Enter 
+  
+  - name: Sync Packer 
+    tags: sync123 
+    shell: tmux send-keys -t source123 "nvim +PackerSync" Enter Enter
+
+
+  - name: Kill Window
+    tags: q3 
+    shell: > 
+      tmux send-keys -t source123 "" :qa Enter 
+       
+  - name: Source and install the vim plugins 
+    tags: vims 
+    shell: nvim --headless -c +source ~/.config/nvim/lua/core/plugin_config/init.vim +PlugUpdate +qa
+
+  - name: Add ansible-language-server 
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall ansible-language-server" +qa
+
+  - name: Add aws-language-server
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall awk-language-server" +qa
+ 
+  - name: Add bash-debug-adapter
+    tags: lang12 
+    shell: >
+      nvim --headless "+:MasonInstall bash-debug-adapter" +qa
+
+  - name: Add diagnostic-languageserver
+    tags: lang13 
+    shell: >
+      nvim --headless "+:MasonInstall diagnostic-languageserver" +qa
+
+  - name: Add lint flake8  
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall flake8" +qa
+
+  - name: Add jedi-language-server
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall jedi-language-server" +qa
+
+  - name: Add jq language-server 
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall jq" +qa
+
+  - name: Add lua-language-server
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall lua-language-server" +qa
+
+  - name: Add pyright 
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall pyright" +qa
+
+  - name: Add python-lsp-server 
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall python-lsp-server" +qa
+
+  - name: Add shell-check language-server 
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall shellcheck" +qa
+    
+  - name: Add yaml-language-server
+    tags: lang 
+    shell: >
+      nvim --headless "+:MasonInstall yaml-language-server" +qa
+      
+  - name: Add yamlint language server 
+    tags: yamllint 
+    shell: >
+      nvim --headless "+:MasonInstall yamllint" +qa
+
+  
+  - name: copy over config folder
+    tags: cp3
+    synchronize:
+      src: ~/.config/i3/config
+      dest: ~/.config/i3/config 
+      mode: push
+     
+  - name: populate picom conf  
+    tags: picom1 
+    ansible.builtin.lineinfile:
+      path: ~/.config/picom.conf
+      line: '{{ item }}'
+    with_items: 
+      - 'inactive-opacity = 0.80;'
+      - 'active-opacity = 0.80;'
+      - 'frame-opacity = 0.80;'
+
+  - name: Install Feh for backround 
+    tags: feh  
+    ansible.builtin.unarchive:
+      src: https://feh.finalrewind.org/feh-3.9.1.tar.bz2
+      dest: /usr/local
+      remote_src: yes
+
+  - name: build feh 
+    tags: buildfeh
+    shell: >
+      cd /usr/local/feh-3.9.1 && make; sudo make install 
+    register: targ1
+   
+  - debug: var=targ1.stdout_lines
+   
+  - name: update alternatives set i3 as default window manager 
+    shell: >
+      update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/i3 60
+ 
+  - name: install all the required Neovim build modules
+    apt:
+      name:
+        - lightdm
+        - plymouth 
+        - xauth 
+        - xorg 
+        - openbox   
+        - plymouth-themes 
+        - plymouth-label 
+        - firmware-sof-signed
+        - python3-xlib 
+        - python3-pillow 
+        - python3-i3ipc   
+      state: present    
+ 
+  - name: enable light dm 
+    tags: light
+    shell: >
+      tmux send-keys -t source123 'sudo dpkg-reconfigure lightdm' Enter
+  
+  - name: chose lightdm 
+    tags: choose 
+    shell: > 
+      tmux send-keys -t source123 "" Enter Enter   
+   
+  - name: make sure service is enabled by default 
+    tags: lightdm123
+    systemd:
+      name: lightdm 
+      enabled: true   
+    register: service12 
+
+  - name: Ignore lid   
+    tags: replace 
+    ansible.builtin.replace:
+      path: /etc/systemd/logind.conf
+      regexp: '(^\#HandleLidSwitch=suspend\s)(.*)$' 
+      replace: "HandleLidSwitch=ignore"  
+
+  - name: Ignore agen just in case    
+    tags: replace1 
+    ansible.builtin.replace:
+      path: /etc/UPower/UPower.conf 
+      regexp: '^IgnoreLid=false' 
+      replace: "IgnoreLid=true"  
+
+      # Placed here by {{ lookup('env','USER') }} using Ansible, {{ ansible_date_time.date }}.
+      #msg="{{ lookup('env','HOME') }}"
+      #msg: System {{ ansible_env.HOME }} has gateway {{ ansible_default_ipv4.gateway }}
+
+  - name: Print all available facts
+    tags: host2
+    ansible.builtin.debug:
+       msg: "{{ ansible_hostname }}"
+
+
+  - name: Add systemd script for Pulseaudio.  
+    tags: systemd1 
+    ansible.builtin.lineinfile:
+      path: /etc/systemd/system/pulseaudio.service 
+      line: '{{ item }}'
+    with_items:  
+      - '[Unit]'
+      - 'Description=PulseAudio system server'
+
+      - '[Service]'
+      - 'Type=notify'
+      - 'ExecStart=pulseaudio --daemonize=no --system --realtime --log-target=journal'
+
+      - '[Install]'
+      - ' WantedBy=multi-user.target'
+
+  - name: Start pulseaudio 
+    tags: puls1
+    ansible.builtin.service:
+      name: pulseaudio.service
+      state: started #--system 
+ 
+  - name: enable pulseaudio 
+    tags: puls33
+    ansible.builtin.service:
+      name: pulseaudio
+      daemon_reload: true 
+      enabled: true 
+
+  - name: add parameters to pulseaudio      
+    tags: replace3 
+    ansible.builtin.replace:
+      path: /etc/pulse/client.conf  
+      regexp: '^; default-server =' 
+      replace: "default-server = /var/run/pulse/native"   
+
+  - name: add parameters to Pulseaudio       
+    tags: replace4
+    ansible.builtin.replace:
+      path: /etc/pulse/client.conf  
+      regexp: '^; autospawn = yes' 
+      replace: 'autospawn = no'
+
+  - name: Add add root user to pulse group 
+    tags: pulse12 
+    user:
+      name: pulse-access
+      groups: sudo 
+      append: yes 
+    become: yes
+ 
+  - name: copy over rofi config folder 
+    tags: cp111
+    synchronize:
+      src: /root/.config/rofi/config.rasi
+      dest: /root/.config/rofi/config.rasi 
+      mode: push
+
+  - name: Clone rofi themes repo
+    tags: rofi1
+    ansible.builtin.git:
+      repo: https://github.com/lr-tech/rofi-themes-collection.git
+      dest: /root/.local/share/rofi
+
+  - name: Add dbus to xinitrc for notifications to work.   
+    tags: systemd1 
+    ansible.builtin.lineinfile:
+      path: /root/.xinitrc 
+      line: '{{ item }}'
+    with_items:  
+      - 'export $(dbus-launch)'
+
+  - name: copy i3blocks config  
+    tags: i3blocks
+    synchronize:
+      src: /root/.config/i3blocks/
+      dest: /root/.config/i3blocks/
+      mode: push
+
+  - name: copy over .zsh_history  
+    tags: i3blocks
+    synchronize:
+      src: /root/.zsh_history
+      dest: /root/.zsh_history
+      mode: push
+
+
+
+
  
