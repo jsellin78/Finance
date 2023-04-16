@@ -1,6 +1,6 @@
 #!/bin/bash
 
-screen="data"
+screen=data
 
 cadjpy15=/root/tmp/cadjpy155.txt
 port1=9091
