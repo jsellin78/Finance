@@ -1,6 +1,7 @@
 
 #How to run
 # Usage: python3 httpserver.py ipaddr port textfile_path 
+# Use this with inotifywait module to get enterprise ready server   
 
 #!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
