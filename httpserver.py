@@ -1,5 +1,8 @@
-#! /usr/bin/env python3
 
+#How to run
+# Usage: python3 httpserver.py ipaddr port textfile_path 
+
+#!/usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import sys
@@ -8,8 +11,8 @@ import subprocess
 import json
 import html
 
-#How to run
-# Usage: python3 ./httpserver.py ipaddr port
+path = str(sys.argv[0])
+
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
@@ -26,8 +29,8 @@ class S(BaseHTTPRequestHandler):
         post_data = self.rfile.read(content_length)
         post = post_data.decode('utf-8')
         post1 = post.strip("\'")
-        with open("/tmp/prices.txt",'a', encoding='utf-8') as fd: #Always append to last line of file.
-              fd.write(str(post1 + '\n')) 
+        with open("{}".format(path), 'a', encoding='utf-8') as fd:
+              fd.write(str(post1 + '\n'))
               print(str(post1))
               self._set_response()
 
@@ -56,8 +59,10 @@ def run(address, port, server_class=HTTPServer, handler_class=S):
     logging.info('Stopping httpd...\n')
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         print("Usage:\n" + sys.argv[0] + " [address] [port]")
         sys.exit(1)
 
     run(sys.argv[1], int(sys.argv[2]))
+
+
