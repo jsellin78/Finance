@@ -1,6 +1,6 @@
 #How to run
 # Usage: python3 httpserver.py ip_adress port textfile_path 
-# Use this with inotifywait module and you have a enterprise ready server   
+# Pair this with inotifywait module and you have enterprise+ ready server   
 
 #! /usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -22,7 +22,7 @@ class S(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-                   #f = open(f'{name}.csv', 'wb') 
+               
     def do_log(self, method):
         content_length = self.headers['Content-Length']
         content_length = 0 if (content_length is None) else int(content_length)
