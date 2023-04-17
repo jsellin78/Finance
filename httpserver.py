@@ -1,9 +1,9 @@
 
 #How to run
-# Usage: python3 httpserver.py ipaddr port textfile_path 
-# Use this with inotifywait module to get enterprise ready server   
+# Usage: python3 httpserver.py ip_adress port textfile_path 
+# Use this with inotifywait module and you have a enterprise ready server   
 
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
 import sys
@@ -12,7 +12,7 @@ import subprocess
 import json
 import html
 
-path = str(sys.argv[0])
+path = str(sys.argv[3])
 
 
 COLOR = "\033[1;32m"
@@ -23,14 +23,14 @@ class S(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-
+                   #f = open(f'{name}.csv', 'wb') 
     def do_log(self, method):
         content_length = self.headers['Content-Length']
         content_length = 0 if (content_length is None) else int(content_length)
         post_data = self.rfile.read(content_length)
         post = post_data.decode('utf-8')
         post1 = post.strip("\'")
-        with open("{}".format(path), 'a', encoding='utf-8') as fd:
+        with open(str(path),'a', encoding='utf-8') as fd:
               fd.write(str(post1 + '\n'))
               print(str(post1))
               self._set_response()
@@ -47,7 +47,7 @@ class S(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self.do_log("DELETE")
 
-def run(address, port, server_class=HTTPServer, handler_class=S):
+ def run(address, port, server_class=HTTPServer, handler_class=S):
     logging.basicConfig(level=logging.INFO)
     server_address = (address, port)
     httpd = server_class(server_address, handler_class)
@@ -65,5 +65,6 @@ if __name__ == '__main__':
         sys.exit(1)
 
     run(sys.argv[1], int(sys.argv[2]))
+       
 
 
