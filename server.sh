@@ -65,31 +65,40 @@ sleep 2;
 
 adress=$(ip a | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')
 
-tmux send-keys -t $screen python3' /root/server/serv1.py "$adress" '$port1' "$cadjpy15" &' Enter 
+tmux send-keys -t $screen python3' /root/server/serv1.py "$adress" '$port1' '$cadjpy15' &' Enter 
 
-tmux send-keys -t $screen python3' /root/server/serv2.py "$adress" '$port2' "$brent15" &' Enter 
+tmux send-keys -t $screen python3' /root/server/serv2.py "$adress" '$port2' '$brent15' &' Enter 
 
-tmux send-keys -t $screen python3' /root/server/serv3.py "$adress" '$port3' "$btcusd15" &' Enter  
+tmux send-keys -t $screen python3' /root/server/serv3.py "$adress" '$port3' '$btcusd15' &' Enter  
 
-tmux send-keys -t $screen python3' /root/server/serv4.py "$adress" '$port4' "$eurchf15" &' Enter   
+tmux send-keys -t $screen python3' /root/server/serv4.py "$adress" '$port4' '$eurchf15' &' Enter   
 
-tmux send-keys -t $screen python3' /root/server/serv5.py "$adress" '$port5' "$eurusd15" &' Enter  
+tmux send-keys -t $screen python3' /root/server/serv5.py "$adress" '$port5' '$eurusd15' &' Enter  
 
-tmux send-keys -t $screen python3' /root/server/serv6.py "$adress" '$port6' "$gbpusd15" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv6.py "$adress" '$port6' '$gbpusd15' &' Enter
 
-tmux send-keys -t $screen python3' /root/server/serv7.py "$adress" '$port7' "$ger15" &' Enter 
+tmux send-keys -t $screen python3' /root/server/serv7.py "$adress" '$port7' '$ger15' &' Enter 
 
-tmux send-keys -t $screen python3' /root/server/serv8.py "$adress" '$port8' "$nas15" &' Enter 
+tmux send-keys -t $screen python3' /root/server/serv8.py "$adress" '$port8' '$nas15' &' Enter 
 
-tmux send-keys -t $screen python3' /root/server/serv9.py "$adress" '$port9' "$us15" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv9.py "$adress" '$port9' '$us15' &' Enter
  
-tmux send-keys -t $screen python3' /root/server/serv10.py "$adress" '$port10' "$usdcad15" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv10.py "$adress" '$port10' '$usdcad15' &' Enter
 
-tmux send-keys -t $screen python3' /root/server/serv11.py "$adress" '$port11' "$usdchf15" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv11.py "$adress" '$port11' '$usdchf15' &' Enter
 
-tmux send-keys -t $screen python3' /root/server/serv13.py "$adress" '$port12' "$xauusd15" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv13.py "$adress" '$port12' '$xauusd15' &' Enter
 
-tmux send-keys -t $screen python3' /root/server/serv14.py "$adress" '$port14' "$currency" &' Enter
+tmux send-keys -t $screen python3' /root/server/serv12.py "$adress" '$port13' '$euraud15' &' Enter
+
+tmux send-keys -t $screen python3' /root/server/serv14.py "$adress" '$port14' '$currency' &' Enter
+
+tmux send-keys -t $screen python3' /root/server/serv15.py "$adress" '$port15' '$euraud4hour' &' Enter
+
+tmux send-keys -t $screen python3' /root/server/serv16.py "$adress" '$port16' '$eurchf4hour' &' Enter
+
+tmux send-keys -t $screen python3' /root/server/serv17.py "$adress" '$port17' '$eurusd4hour' &' Enter
+
 
 
 
