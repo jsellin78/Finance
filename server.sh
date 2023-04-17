@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#tmux session, enables us to run headless in daemon mode. 
 screen=data
 
 cadjpy15=/root/tmp/cadjpy155.txt
