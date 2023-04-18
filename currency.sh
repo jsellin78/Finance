@@ -34,7 +34,7 @@ if [[ 10#09$nowclose -lt 10#09$prevclose ]] ; then #bearish
       echo "Uppkopt" ${GREEN}$downwiq${GREEN} ${NOCOLOR}
       echo "body"      ${RED}$body${RED} ${NOCOLOR}
       echo $nl
-      sleep 1; bash -c "/root/currency/ifvalue15bear.sh ${args[1]}"
+      sleep 1; bash -c "/root/currency/ifvalue15bear.sh ${args[1]} ${args[0]}"
       fi;
 
        filelength=$(wc -l ${args[0]} | awk '{ print $1 }') #How many lines exist in file.
