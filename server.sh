@@ -78,8 +78,6 @@ tmux new -ds nas10015; tmux send-keys -t nas10015 'inotifywait -m -e close_write
 
 tmux new -ds us15; tmux send-keys -t us15 'inotifywait -m -e close_write '$us15' --format --quiet | while read -r dir; do /root/currency/currency8.sh '$us15' '$result8' ; done &' Enter;
 
-tmux new -ds usdcad15; tmux send-keys -t usdcad15 'inotifywait -m -e close_write '$usdcad15' --format --quiet | while read -r dir; do /root/currency/currency8.sh '$usdcad15' '$result9'; done &' Enter;
-
 tmux new -ds usdchf15; tmux send-keys -t usdchf15 'inotifywait -m -e close_write '$usdchf15' --format --quiet | while read -r dir; do /root/currency/currency9.sh '$usdchf15' '$result10'; done &' Enter;
 
 tmux new -ds xauusd15; tmux send-keys -t xauusd15 'inotifywait -m -e close_write '$xauusd15' --format --quiet | while read -r dir; do /root/currency/currency10.sh '$xauusd15' '$result11'; done &' Enter;
@@ -89,6 +87,9 @@ tmux new -ds euraud15; tmux send-keys -t euraud15 'inotifywait -m -e close_write
 tmux new -ds euraud4hour; tmux send-keys -t euraud4hour 'inotifywait -m -e close_write '$euraud4hour' --format --quiet | while read -r dir; do /root/15min/euraud/euraud.sh; done &' Enter
 
 tmux new -ds euraud4hour; tmux send-keys -t eurchf4hour 'inotifywait -m -e close_write '$eurchf4hour' --format --quiet | while read -r dir; do /root/15min/eurchf/eurchf.sh; done &' Enter
+
+tmux new -ds usdcad15; tmux send-keys -t usdcad15 'inotifywait -m -e close_write '$usdcad15' --format --quiet | while read -r dir; do /root/currency/currency12.sh '$usdcad15' '$result9'; done &' Enter;
+
 
 tmux new -ds ifvalues
 
