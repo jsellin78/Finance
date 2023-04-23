@@ -72,3 +72,12 @@ if [[ "$VAL3" > "$VAL4" ]]; then
     echo "Pattern was created at"${NOCOLOR} ${YELLOW}$startdate1${YELLOW} $NOCOLOR
     echo "Sunday is" $sunday
     echo "Friday is" $friday123 
+else 
+    echo "startdate" $startdate
+    left123=$(date -d "$(LC_TIME=C date -d "$startdate1")+$noweek hour" +"%Y-%m-%d %H:%M" | tr '-' ' ' | tr ':' ' ') #first pattern 16x  
+    echo "No weekend" $left123
+    python3 ./timer.py $left123 ${args[2]}
+fi
+
+
+
