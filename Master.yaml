@@ -11,21 +11,21 @@
         - include_vars:
             file: 'vars1.yaml' 
         - include_role:
-            name: 'roles/enviroment.yml'
+            name: 'roles/setup.yaml'
 
-    - name: setup kvm-bridge for specific host 
+    - name: Setup kvm-bridge for host 
       tags: bridge
       block:
         - include_vars:
             file: 'vars2.yaml'
         - include_role:
-            name: 'roles/bridge.yml'
+            name: 'roles/bridge.yaml'
 
-    - name: Setup Nextcloud for specific host 
+    - name: Setup Nextcloud Server
       tags: nextcloud 
       block:
         - include_vars:
-            file: 'vars2.yaml'
+            file: 'vars3.yaml'
         - include_role:
-            name: 'roles/nextcloud.yml'
+            name: 'roles/nextcloud.yaml'
 
