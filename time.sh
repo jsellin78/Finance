@@ -17,7 +17,7 @@ args=("$@")
 startdate=$(date -d "${args[1]}":"${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M")
 form=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M" | tr '-' ' ' | sed 's/.\{5\}$//')
 endate=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]} +$sixteen minutes" +"%Y-%m-%d %H:%M")
-friday123=`python3 ./friday123.py $form` #prints the exact date of comming friday 
+friday123=`python3 ./friday123.py $form` 
 
 VAL1=$(date +%s -d"$endate")
 VAL2=$(date +%s -d"$friday123")
