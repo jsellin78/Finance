@@ -1,26 +1,22 @@
 #!/bin/bash
-p="n43.png" #Image of Candlesticks
+p="n43.png" 
 sixteen="240"
 ninteen="285"
 twentiethree="330"
 ted="19:00"
 year=$(date +%Y)
 month=$(date +%m)
-#month=$(date -d "1 month ago" +'%m')
-currency1="16x_15_minutes ${args[3]}"
-currency2="19x_15_minutes ${args[3]}"
-currency3="22x_4_minutes${args[3]}"
+currency1="16x 15 min ${args[3]}"
+currency2="19x 15 min ${args[3]}"
+currency3="22x 15 min ${args[3]}"
 
 args=("$@")
 
 
                        #hour       #minute                      #day  
 startdate=$(date -d "${args[1]}":"${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M")
-
 form=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M" | tr '-' ' ' | sed 's/.\{5\}$//')
-
 endate=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]} +$sixteen minutes" +"%Y-%m-%d %H:%M")
-
 friday123=`python3 ./friday123.py $form` #prints the exact date of comming friday 
 
 VAL1=$(date +%s -d"$endate")
