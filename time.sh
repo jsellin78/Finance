@@ -13,7 +13,7 @@ currency3="22x 15 min ${args[3]}"
 args=("$@")
 
 
-                       #hour       #minute                      #day  
+                       #hour       #minute                      #day  #args[3] equals the currency provided you want to monitor 
 startdate=$(date -d "${args[1]}":"${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M")
 form=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]}" +"%Y-%m-%d %H:%M" | tr '-' ' ' | sed 's/.\{5\}$//')
 endate=$(date -d "${args[1]}${args[2]} $year"-"$month"-"${args[0]} +$sixteen minutes" +"%Y-%m-%d %H:%M")
