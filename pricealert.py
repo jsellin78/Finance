@@ -43,3 +43,18 @@ if __name__ == '__main__':
     max_run_time = 2000  
     host = '127.0.1.1' 
     port = 8080
+    
+
+#Connect to server socket with the the below script      
+
+#import socket
+#host = '109.104.17.112' # modify this to match the server host
+#port = 8035 # modify this to match the server port
+#with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+#    client_socket.connect((host, port))
+#    while True:
+#        data = client_socket.recv(1024)
+#        if not data:
+#            break
+#        print(repr(data.decode()))   
+    
