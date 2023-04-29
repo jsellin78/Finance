@@ -31,10 +31,10 @@ def price_alert(file_path, currency, target_price, max_run_time, host, port):
             last_line = get_last_line(file_path)
             time_str, prices = parse_price_info(last_line)
             if prices.get(currency) and prices[currency] < target_price:
-                # trigger an alert (e.g. send an email or SMS message)
+                
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
                 conn.sendall(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'.encode())
-            time.sleep(1) # wait for 60 seconds before checking again
+            time.sleep(60) # wait for 60 seconds before checking again
 
 if __name__ == '__main__':
     file_path = '/root/tmp/currency.txt'
