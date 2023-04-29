@@ -1,11 +1,18 @@
 import time
 import json
 import os 
-import psutil
-import sys 
-import socket
+import sys
+import multiprocessing 
+import argparse
 
-def get_last_line(file_path): 
+
+#python3 pricealert.py --file /root/tmp/currency.txt --currency usdsek --target 1.20000 --time 3600 --workers 2  
+
+def get_last_line(file_path):
+    with open(file_path, 'r') as file:
+        lines = file.readlines() 
+
+def get_last_line(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
         last_line = lines[-1].strip()
@@ -18,43 +25,36 @@ def parse_price_info(price_info):
     del prices['Time']
     return time_str, prices
 
-def price_alert(file_path, currency, target_price, max_run_time, host, port):
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
-    server_socket.listen()
-    print(f"Listening on {host}:{port}")
-    conn, addr = server_socket.accept()
-    with conn:
-        print(f"Connected by {addr}")
-        start_time = time.time()
-        while time.time() - start_time < max_run_time:
-            last_line = get_last_line(file_path)
-            time_str, prices = parse_price_info(last_line)
-            if prices.get(currency) and prices[currency] < target_price:
-                
-                print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
-                conn.sendall(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'.encode())
-            time.sleep(60) # wait for 60 seconds before checking again
+def price_alert(args):
+    file_path, currency, target_price, max_run_time = args
+    start_time = time.time()
+    wait_time = 300 
+    while time.time() - start_time < max_run_time:
+        last_line = get_last_line(file_path)
+        time_str, prices = parse_price_info(last_line)
+        if prices.get(currency) and prices[currency] < target_price:
+            # trigger an alert (e.g. send an email or SMS message)
+            print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
+            print("Target price reached. Stopping the script...")
+            break
+        time.sleep(wait_time)
+
+def main():
+    parser = argparse.ArgumentParser(description='Run price alert.')
+    parser.add_argument('--file', dest='file_path', help='Path to the file with price information', required=True)
+    parser.add_argument('--currency', dest='currency', help='Currency to monitor', required=True)
+    parser.add_argument('--target', dest='target_price', type=float, help='Target price for the currency', required=True)
+    parser.add_argument('--time', dest='max_run_time', type=int, help='Maximum run time in seconds', required=True)
+    parser.add_argument('--workers', dest='workers', type=int, help='Number of worker processes', required=True)
+
+    args = parser.parse_args()
+
+    # Create a list of arguments for each worker process to minimize cpu usage 
+    worker_args = [(args.file_path, args.currency, args.target_price, args.max_run_time) for i in range(args.workers)]
+
+    # Create a Pool of worker processes and run the `price_alert` function with each set of arguments
+    with multiprocessing.Pool(args.workers) as p:
+        p.map(price_alert, worker_args)
 
 if __name__ == '__main__':
-    file_path = '/root/tmp/currency.txt'
-    currency = str(sys.argv[1])
-    target_price = float(sys.argv[2]) 
-    max_run_time = 2000  
-    host = '127.0.1.1' 
-    port = 8080
-    
-
-#Connect to server socket with the the below script      
-
-#import socket
-#host = '109.104.17.112' # modify this to match the server host
-#port = 8035 # modify this to match the server port
-#with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-#    client_socket.connect((host, port))
-#    while True:
-#        data = client_socket.recv(1024)
-#        if not data:
-#            break
-#        print(repr(data.decode()))   
-    
+    main()
