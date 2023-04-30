@@ -5,7 +5,7 @@ import sys
 import multiprocessing 
 import argparse
 
-# python3 ./pricealert.py --file=/root/tmp/currency.txt --currency=usdsek --target=1.20000 --timeout=2000 --workers=2 --type=below --interval=15
+# python3 ./pricealert.py --file=/root/tmp/currency.txt --currency=usdsek --target=1.20000 --timeout=85000 --workers=2 --type=below --interval=180
 
 def get_last_line(file_path):
     with open(file_path, 'r') as file:
@@ -27,11 +27,13 @@ def price_alert(args):
         last_line = get_last_line(file_path)
         time_str, prices = parse_price_info(last_line)
         if prices.get(currency):
-            if alert_type == 'below' and prices[currency] >= target_price:
+            if alert_type == 'below' and prices[currency] <= target_price:
+                # trigger an alert (e.g. send an email or SMS message)
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
-            elif alert_type == 'above' and prices[currency] <= target_price:
+            elif alert_type == 'above' and prices[currency] >= target_price:
+                # trigger an alert (e.g. send an email or SMS message)
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is above target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
@@ -54,7 +56,8 @@ def main():
 
     # Create a Pool of worker processes and run the `price_alert` function with each set of arguments
     with multiprocessing.Pool(args.workers) as p:
-        p.map(price_alert, worker_args)
+        for _ in p.imap(price_alert, worker_args, chunksize=1):
+            pass
 
 if __name__ == '__main__':
     main()
