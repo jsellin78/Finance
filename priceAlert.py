@@ -4,8 +4,14 @@ import os
 import sys
 import multiprocessing 
 import argparse
+import requests
+import math
+
+chat_id="" #Telegramchat_id
+TOKEN="" #Token
 
 #python3 ./priceAlert.py --file=/root/tmp/currency.txt --currency=usdsek --target=1.20000 --timeout=86400 --workers=2 --type=above --interval=180 & 
+
 
 def get_last_line(file_path):
     with open(file_path, 'rb') as file:
@@ -28,14 +34,17 @@ def price_alert(args):
     while time.time() - start_time < max_run_time:
         last_line = get_last_line(file_path)
         time_str, prices = parse_price_info(last_line)
+        tolerance = 1e-5
         if prices.get(currency):
-            if alert_type == 'below' and prices[currency] <= target_price:
-                # trigger an alert (e.g. send an email or SMS message)
+            if alert_type == 'below' and math.isclose(prices[currency], target_price, rel_tol=1e-5):
+                url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
+                requests.get(url).json()
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
-            elif alert_type == 'above' and prices[currency] >= target_price:
-                # trigger an alert (e.g. send an email or SMS message)
+            elif alert_type == 'above' and math.isclose(prices[currency], target_price, rel_tol=1e-5):
+                url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
+                requests.get(url).json()
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is above target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
