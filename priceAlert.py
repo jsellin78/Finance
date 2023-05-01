@@ -1,28 +1,29 @@
 import time
-import json
-import os 
+import ujson  
+from os import SEEK_CUR, SEEK_END
 import sys
 import multiprocessing 
 import argparse
 import requests
 import math
 
-chat_id="" #Telegramchat_id
-TOKEN="" #Token
+session = requests.Session()
+chat_id="" #Telegramchatid
+token="" #Token
 
 #python3 ./priceAlert.py --file=/root/tmp/currency.txt --currency=usdsek --target=1.20000 --timeout=86400 --workers=2 --type=above --interval=180 & 
 
 
 def get_last_line(file_path):
     with open(file_path, 'rb') as file:
-        file.seek(-2, os.SEEK_END)
+        file.seek(-2, SEEK_END)
         while file.read(1) != b'\n':
-            file.seek(-2, os.SEEK_CUR)
+            file.seek(-2, SEEK_CUR)
         last_line = file.readline().decode().strip()
         return last_line
 
 def parse_price_info(price_info):
-    data = json.loads(price_info)
+    data = ujson.loads(price_info)
     time_str = data['Time']
     prices = data.copy()
     del prices['Time']
@@ -37,14 +38,16 @@ def price_alert(args):
         tolerance = 1e-5
         if prices.get(currency):
             if alert_type == 'below' and math.isclose(prices[currency], target_price, rel_tol=1e-5):
+            # trigger an alert (e.g. send an email or SMS message)
                 url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
-                requests.get(url).json()
+                session.get(url).json()
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
             elif alert_type == 'above' and math.isclose(prices[currency], target_price, rel_tol=1e-5):
-                url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
-                requests.get(url).json()
+                # trigger an alert (e.g. send an email or SMS message)
+                url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
+                session.get(url).json()
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is above target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
                 break
