@@ -2,6 +2,8 @@
 # Usage: python3 httpserver.py ip_adress port textfile_path 
 # Pair this with inotifywait module and you have enterprise+ ready server   
 
+# curl -X POST -H "Content-Type: application/json" -d '{"key": "value"}' http://address:port
+
 #! /usr/bin/env python3
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import logging
