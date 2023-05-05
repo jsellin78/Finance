@@ -37,7 +37,7 @@ def price_alert(args):
         tolerance = 1e-5
         if prices.get(currency):
             if alert_type == 'below' and math.isclose(prices[currency], target_price, rel_tol=1e-5):
-                url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
+                url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text='Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}'"
                 session.get(url).json()
                 print(f'Price Alert for {currency}! Current price: {prices[currency]:.5f} is below target price: {target_price:.5f} as of {time_str}')
                 print("Target price reached. Stopping the script...")
