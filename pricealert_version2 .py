@@ -9,13 +9,13 @@ import math
 import logging
 import time
 
-chat_id="2012646742" #Enter Telegramchat_id
-TOKEN="5640166055:AAE4vMzP-lk2dh-fszrejyRFBhCCp1UCGXI" #Token
+chat_id="" #Enter Telegramchat_id
+TOKEN="" #Token
 session = requests.Session()
 
 logging.basicConfig(filename='price_alert.log', level=logging.DEBUG)
 
-
+#Instead of grabbing price from a file we go directly to our api endpoint 
 def get_price_info():
     url = "http://192.168.1.220:8013/posts"
     response = session.get(url)
