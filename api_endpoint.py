@@ -5,7 +5,7 @@ import logging
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-#Instead of saving the contents of the value coming into the http server to a file, as in server2.py we store the data in the servers memory and we can acess the endpoint with a curl request 
+#Instead of saving the contents of the value coming into the http server to a file, as in server2.py we store the data in the servers memory and we can acess the endpoint with a simple curl request 
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
@@ -23,8 +23,7 @@ class S(BaseHTTPRequestHandler):
     def do_GET(self): #Get when we make a curl request to the server to get the data that is stored there. 
         self.do_log("GET")
         if self.path == '/posts':
-        # Check if there is data stored in the server's memory
-            if hasattr(self.server, 'value'):
+            if hasattr(self.server, 'value'):       # Check if there is data stored in the server's memory
                 self._set_response('application/json')
            
                 post_values = self.server.value   # Get the data from the server's memory
@@ -34,7 +33,7 @@ class S(BaseHTTPRequestHandler):
         else:
             pass                
     
-    def do_POST(self): #Post defining the data thats coming in to the http server 
+    def do_POST(self): #Post defining the data thats coming in to the http server
         self.do_log("POST")
         if self.path == '/posts': #endpoint of the api 
             self._set_response('application/json') # Set the response headers
