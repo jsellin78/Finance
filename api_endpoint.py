@@ -5,7 +5,7 @@ import logging
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-#Difference betwween server2.py and this instead of saving the contents to a file we store the data in the servers memory and we can easily acess the endpoint with a curl request 
+#Instead of saving the contents of the value coming into the http server to a file, as in server2.py we store the data in the servers memory and we can acess the endpoint with a curl request 
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
