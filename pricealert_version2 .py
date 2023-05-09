@@ -15,7 +15,7 @@ session = requests.Session()
 
 logging.basicConfig(filename='price_alert.log', level=logging.DEBUG)
 
-#Instead of grabbing price from a file we go directly to our api endpoint 
+#Instead of grabbing price from a file we go directly to api_endpoint.py 
 def get_price_info():
     url = "http://192.168.1.220:8013/posts"
     response = session.get(url)
