@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # curl http://192.168.1.220:2046/4hour/USDCHF/low 
 # curl http://192.168.1.220:2046/4hour/GBPJPY/high 
-# curl http://192.168.1.220:2046/4hour/GBPJPY 
+# curl http://192.168.1.220:2046/4hour/GBPJPY #Full json response 
 
 
 COLOR = "\033[1;32m"
