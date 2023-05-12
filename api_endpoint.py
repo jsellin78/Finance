@@ -30,12 +30,12 @@ class S(BaseHTTPRequestHandler):
         if self.path.startswith('/4hour/'):
             # Extract the currency pair from the URL
             url_parts = self.path.split('/')
-            currency_pair = url_parts[2]
+            currency_pair = url_parts[2] # /4hour/parts[2]
 
             # If a specific value is requested, extract it from the URL
             value = None
             if len(url_parts) == 4:
-                value = url_parts[3]
+                value = url_parts[3] #/4hour/currency/parts[3]
 
             # Check if there is data stored in the server's memory
             if hasattr(self.server, 'value'):
