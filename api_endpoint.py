@@ -4,11 +4,11 @@ import json
 import logging
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import subprocess
 
 # curl http://192.168.1.220:2046/4hour/USDCHF/low 
 # curl http://192.168.1.220:2046/4hour/GBPJPY/high 
 # curl http://192.168.1.220:2046/4hour/GBPJPY #Full json response 
-
 
 COLOR = "\033[1;32m"
 RESET_COLOR = "\033[00m"
@@ -16,75 +16,81 @@ RESET_COLOR = "\033[00m"
 
 class S(BaseHTTPRequestHandler):
     
-    def _set_response(self, content_type='text/html'):
+    def _set_response(self, content_type='application/json'):
         self.send_response(200)
-        self.send_header('Content-type', content_type)
+        self.send_header('Content-type', 'content_type')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+        self.send_header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type')
         self.end_headers()
+        
+        if content_type == 'application/json':
+           self.wfile.write(b'\n')
         
     def do_log(self, method):
         logging.info(f"{COLOR}[{self.address_string()}]{RESET_COLOR} {method} {self.path}")
    
-                        
+            
+
     def do_GET(self):
         self.do_log("GET")
         if self.path.startswith('/4hour/'):
-            # Extract the currency pair from the URL
             url_parts = self.path.split('/')
-            currency_pair = url_parts[2] # /4hour/parts[2]
+            currency_pair = url_parts[2]
 
-            # If a specific value is requested, extract it from the URL
             value = None
             if len(url_parts) == 4:
-                value = url_parts[3] #/4hour/currency/parts[3]
+                value = url_parts[3]
 
-            # Check if there is data stored in the server's memory
             if hasattr(self.server, 'value'):
-                # Filter the data based on the currency pair
                 filtered_data = [data for data in self.server.value if data['currency'] == currency_pair]
                 if filtered_data:
-                    # If a specific value is requested, extract it from the data
                     if value:
-                        result = [data[value] for data in filtered_data]
-                        # Remove the brackets and hash symbol from the result
-                        result = str(result[0]).replace('[', '').replace(']', '').replace('#', '').replace('"', '')
+                        result = str(filtered_data[0][value]).replace('\#', '').replace('"', '').replace('#', '')
                     else:
                         result = filtered_data
-                    # Set the response headers
+                        for res in result:
+                            for k, v in res.items():
+                                if isinstance(v, str):
+                                    res[k] = v.strip('#"')
+
                     self._set_response('application/json')
-                    # Send the result as a JSON response
-                    self.wfile.write(json.dumps(result).encode('utf-8'))
+                    if 'jq' in self.headers.get('User-Agent', ''):
+                        # Use jq to process the JSON data
+                        cmd = f'echo \'{json.dumps(result)}\' | jq -c'
+                        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+                        out, _ = p.communicate()
+                        self.wfile.write(out)
+                    else:
+                        self.wfile.write(json.dumps(result).encode('utf-8'))
                 else:
-                    # If there is no data for the given currency pair, send a 404 response
                     self.send_error(404, f'No data found for currency pair {currency_pair}')
             else:
-                # If there is no data, send a 404 response
                 self.send_error(404, 'No data found')
         else:
-            # Handle other GET requests here
             pass
-    
-    def do_POST(self): #Post defining the data thats coming in to the http server 
+     
+    def do_POST(self): #Defining the data thats coming in to the http server 
         self.do_log("POST")
         if self.path == '/4hour': #endpoint of the api 
             # Set the response headers
             self._set_response('application/json')
-            # Get the length of the incoming POST data
             content_length = self.headers.get('Content-Length')
             content_length = 0 if content_length is None else int(content_length) 
-            # Read the POST data and parse it as JSON
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
+            logging.info(f"Received data: {json.dumps(data)}")
             print(type(data))
 
             post_values_list = []
             for post in data:
-               time = post.get('time')
-               currency = post.get('Currency')
-               prevclose = post.get('PrevClose')
-               open_ = post.get('Open')
-               high = post.get('High')
-               low = post.get('Low')
-               close = post.get('Close')
+               time = post.get('Time')
+               currency = str(post.get('Currency')).replace('#', '')
+               prevclose = str(post.get('PrevClose')).replace('#', '')
+               open_ = str(post.get('Open')).replace('#', '')
+               high = str(post.get('High')).replace('#', '')
+               low = str(post.get('Low')).replace('#', '')
+               close = str(post.get('Close')).replace('#', '')
 
                post_values = {
                    'time': time,
@@ -93,19 +99,17 @@ class S(BaseHTTPRequestHandler):
                    'open': open_,
                    'high': high,
                    'low': low,
-                   'close': close,
+                   'close': close
                }
                post_values_list.append(post_values)
-
+            logging.info(f"Parsed data: {json.dumps(post_values_list, indent=4)}")
             print(json.dumps(post_values_list, indent=4))
-   
-            self.server.value = post_values_list # # Store the list of dictionaries in the server's memory
-            self.send_response(200) # # Send a response indicating that the update was successful
+            self.server.value = post_values_list 
+            self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
         else:
-            # Handle other POST requests here
             pass
     
     def do_PUT(self):
