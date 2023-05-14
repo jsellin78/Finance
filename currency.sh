@@ -50,7 +50,7 @@ nowclose=$(curl -s http://"$addr":"$port"/4hour/"$currency" | jq -r '.[].close' 
 
 if [[ 10#09$nowclose -lt 10#09$prevclose ]] ; then #bearish
       high=$(curl -s http://"$addr":"$port"/4hour/"$currency" | jq -r '.[].high' | awk '{gsub(/["".]/,""); print;}' | sed -e ':a;s/^.\{0,'$padd'\}$/&0/;ta' -e 's/^\([0-9]\{1,'$limit'\}\).*$/\1/')
-      prevclose=$(curl -s http://"$addr":2066/4hour/"$currency" | jq -r '.[].prevclose' | awk '{gsub(/["".]/,""); print;}' | sed -e ':a;s/^.\{0,'$padd'\}$/&0/;ta' -e 's/^\([0-9]\{1,'$limit'\}\).*$/\1/')
+      prevclose=$(curl -s http://"$addr":$port/4hour/"$currency" | jq -r '.[].prevclose' | awk '{gsub(/["".]/,""); print;}' | sed -e ':a;s/^.\{0,'$padd'\}$/&0/;ta' -e 's/^\([0-9]\{1,'$limit'\}\).*$/\1/')
       low=$(curl -s http://"$addr":"$port"/4hour/"$currency" | jq -r '.[].low' | awk '{gsub(/["".]/,""); print;}' | sed -e ':a;s/^.\{0,'$padd'\}$/&0/;ta' -e 's/^\([0-9]\{1,'$limit'\}\).*$/\1/')
       nowclose=$(curl -s http://"$addr":"$port"/4hour/"$currency" | jq -r '.[].close' | awk '{gsub(/["".]/,""); print;}' | sed -e ':a;s/^.\{0,'$padd'\}$/&0/;ta' -e 's/^\([0-9]\{1,'$limit'\}\).*$/\1/')
       upwiq=$(expr \( $high - $prevclose \)) #today high - open
