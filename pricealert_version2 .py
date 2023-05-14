@@ -10,6 +10,8 @@ import math
 import logging
 import threading 
 
+#python3 ./priceAlert.py --currency=usdsek --target=1.20000 --timeout=86400 --workers=2 --type=below --interval=2 & 
+
 chat_id = ""  # Enter Telegram chat_id
 TOKEN = ""  # Token
 session = requests.Session()
