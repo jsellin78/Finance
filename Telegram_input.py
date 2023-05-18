@@ -96,7 +96,7 @@ def handle_message(update, context):
              sentiment = parts[2]
              args = parts[3:5]
              if len(parts) >= 4:
-                 description = ' '.join(parts[3:])
+                 description = ' '.join(parts[3:]) #If length greather than 4 then add description
              else:
                  description = None
              Price_alert(update, context, number, currency, sentiment, args, description)
