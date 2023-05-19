@@ -47,4 +47,4 @@ def monitor_feed():
 
         time.sleep(60)  # wait for 60 seconds
 
-monitor_feed():
+monitor_feed()
