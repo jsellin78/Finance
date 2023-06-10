@@ -26,7 +26,7 @@ class DatabaseManager:
             user="john",
             password="john93"
         )
-        self.cur = self.connection.cursor()  # Use self.cur, not self.database_manager.cur
+        self.cur = self.connection.cursor()  
         self.create_tables()
 
     def get_article_content(self, folder_name, article_title):
@@ -110,12 +110,12 @@ class DatabaseManager:
             FOREIGN KEY (folder_id) REFERENCES folders(id)
         );
         """
-        self.cur.execute(folders_table_sql)  # Use self.cur, not self.database_manager.cur
-        self.cur.execute(articles_table_sql)  # Use self.cur, not self.database_manager.cur
-        self.cur.execute(article_folders_table_sql)  # Use self.cur, not self.database_manager.cur
-        self.cur.execute(interesting_articles_table_sql)  # Use self.cur, not self.database_manager.cur
-        self.cur.execute(create_table_query)  # Use self.cur, not self.database_manager.cur
-        self.connection.commit()  # Use self.conn, not self.database_manager.conn
+        self.cur.execute(folders_table_sql)  
+        self.cur.execute(articles_table_sql)  
+        self.cur.execute(article_folders_table_sql)  
+        self.cur.execute(interesting_articles_table_sql)  
+        self.cur.execute(create_table_query)  
+        self.connection.commit() 
 
     def save_interesting_article(self, date, headline, description):
         try:
@@ -124,7 +124,7 @@ class DatabaseManager:
                 VALUES (%s, %s, %s)
             """, (date, headline, description))
 
-            self.connection.commit()  # Use self.conn, not self.database_manager.conn
+            self.connection.commit()  # 
         except Exception as e:
             print(f"Exception occurred: {e}")
 
@@ -154,8 +154,8 @@ class DatabaseManager:
             self.connection.rollback()  # Rollback the transaction
 
     def get_articles_in_folder(self, folder_id):
-        self.cur.execute("SELECT id, title FROM articless WHERE folder_id = %s ORDER BY title", (folder_id,))  # Use self.cur, not self.database_manager.cur
-        articless = self.cur.fetchall()  # Use self.cur, not self.database_manager.cur
+        self.cur.execute("SELECT id, title FROM articless WHERE folder_id = %s ORDER BY title", (folder_id,)) 
+        articless = self.cur.fetchall()  
         print(f"There are {len(articless)} articles in the folder with id {folder_id}.")
         return articless
 
@@ -163,10 +163,10 @@ class DatabaseManager:
         folder_id = None
         try:
            cursor = self.connection.cursor()
-           insert_query = """INSERT INTO folders (name) VALUES (%s) RETURNING id;"""  # Use the correct table name "folders"
+           insert_query = """INSERT INTO folders (name) VALUES (%s) RETURNING id;""" 
            cursor.execute(insert_query, (folder_name,))
            folder_id = cursor.fetchone()[0]  # Fetch the returned id
-           self.connection.commit()  # committing the transaction
+           self.connection.commit()  
            cursor.close()
         except (Exception, psycopg2.Error) as error:
             print("Failed inserting record into folder table", error)
