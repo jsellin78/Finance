@@ -449,8 +449,8 @@ class DropTreeWidget(QTreeWidget):
         if selected_items:
             selected_item = selected_items[0]
 
-            article_id = selected_item.data(0, Qt.UserRole)  # Retrieve the article's ID
-            article_title = selected_item.text(0)  # Retrieve the article's title
+            article_id = selected_item.data(0, Qt.UserRole)  #article's ID
+            article_title = selected_item.text(0)  #article's title
 
             print(f"Selected item '{selected_item}', ID '{article_id}', title '{article_title}'")
             if article_id is not None:  # If the selected item is an article
@@ -468,6 +468,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     database_manager = DatabaseManager()
     monitor = NewsMonitor(database_manager)
-    window = MyWindow(monitor, database_manager)  # Pass the database manager here
+    window = MyWindow(monitor, database_manager)  
     window.show()
     sys.exit(app.exec_())
