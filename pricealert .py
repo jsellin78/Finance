@@ -19,7 +19,7 @@ logging.basicConfig(filename='price_alert.log', level=logging.DEBUG)
 
 
 def get_price_info():
-    url = "http://192.168.1.220:8015/posts"
+    url = "ws://192.168.1.220:8015/posts"
     response = session.get(url)
     data = response.json()
     time_str = data['time']
