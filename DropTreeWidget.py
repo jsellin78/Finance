@@ -1,12 +1,16 @@
 class DropTreeWidget(QTreeWidget):
     def __init__(self, parent=None, database_manager=None, my_window=None):
-        self.database_manager = DatabaseManager()
+        self.database_manager = database_manager
         self.my_window = my_window
+        self.market_data = DatabaseManager()
         super().__init__(parent)
         self.setAcceptDrops(True)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)  # Enable custom context menu
-#        self.customContextMenuRequested.connect(self.openMenu)
-       
+        self.setContextMenuPolicy(Qt.CustomContextMenu) 
+
+        self.database_manager.create_table_folder_states()
+        self.database_manager.add_unique_constraint_to_folder_id()
+        self.itemExpanded.connect(self.save_expanded_state)
+        self.itemCollapsed.connect(self.save_collapsed_state)
         self.setHeaderLabel('Article titles')
         self.contextMenu = QMenu(self)
         self.writeAction = QAction('Write Text', self)
@@ -51,15 +55,41 @@ class DropTreeWidget(QTreeWidget):
         """)
 
 
-        #background-color: #ADD8E6; /* sets background when an item is hovered */
+
+
+    def save_expanded_state(self, item):
+        folder_id = item.data(0, Qt.UserRole)
+        print(f"Expanded folder with id {folder_id}")
+        result = self.database_manager.update_folder_state_in_db(folder_id, True)
+        if result:
+            print(f"Successfully saved expanded state for folder id {folder_id}")
+        else:
+             print(f"Failed to save expanded state for folder id {folder_id}")
+
+    def save_collapsed_state(self, item):
+        folder_id = item.data(0, Qt.UserRole)
+        print(f"Collapsed folder with id {folder_id}")
+        result = self.database_manager.update_folder_state_in_db(folder_id, False)
+        if result:
+            print(f"Successfully saved collapsed state for folder id {folder_id}")
+        else:
+             print(f"Failed to save collapsed state for folder id {folder_id}")
 
     def set_Alert(self):
-        selected_items = self.selectedItems()
+        selected_items = self.my_window.target_tree.selectedItems()
+        article_id = self.get_selected_article_id()
         if selected_items:
             selected_item = selected_items[0]
             article_id = selected_item.data(0, Qt.UserRole)
-            # Fetch article details
-            article_title, article_description, article_date = self.database_manager.get_article_details(article_id)
+            print(article_id)
+            article_details = self.database_manager.get_article_details(article_id)
+
+            if article_details is None:
+                print(f"No details found for article with id {article_id}")
+                return  
+
+            id, article_title, article_description, article_date = article_details
+
 
             self.dialog = QDialog(self)
             self.dialog.setWindowTitle('Set Alert')
@@ -73,9 +103,9 @@ class DropTreeWidget(QTreeWidget):
             description_label.setWordWrap(True)
 
             self.datetime_field = QDateTimeEdit(self.dialog)
-            self.datetime_field.setDateTime(QDateTime.currentDateTime())  # Default to current date and time
+            self.datetime_field.setDateTime(QDateTime.currentDateTime())  
             self.datetime_field.setCalendarPopup(True)  # Enables a calendar popup for date selection
-            self.datetime_field.setDisplayFormat("yyyy-MM-dd HH:mm") #ss  # 24-hour format 
+            self.datetime_field.setDisplayFormat("yyyy-MM-dd HH:mm")  
             self.datetime_field.setStyleSheet("""
             QAbstractItemView::item {
                 color: yellow;  /* adjust this color according to your needs */
@@ -88,15 +118,15 @@ class DropTreeWidget(QTreeWidget):
                color: yellow;  /* adjust this color according to your needs */
             }
             """)
-            comment_label = QLabel('Add Comment', self.dialog)  # This is the label for the comment field
-            self.comment_field = QTextEdit(self.dialog)  # This is the new comment field
+            comment_label = QLabel('Add Comment', self.dialog)  
+            self.comment_field = QTextEdit(self.dialog)  
             self.comment_field.setStyleSheet("""
                 border: 1px solid grey;
             """)
-            self.comment_field.setFixedHeight(100)  # Change this value to adjust the height
+            self.comment_field.setFixedHeight(100)  
             ok_button = QPushButton('OK', self.dialog)
             ok_button.clicked.connect(lambda: self.on_ok_button_clicked(article_id, article_title, article_description))
-            #ok_button.clicked.connect.self.on_ok_button_clicked(year, month, day, hour, minute, comment_label, article_title, article_description)
+               
 
             layout = QVBoxLayout(self.dialog)
             layout.setSpacing(10)  # set spacing between widgets in the layout
@@ -126,13 +156,11 @@ class DropTreeWidget(QTreeWidget):
     def run_remote_script(self, article_title, article_description, article_id, selected_date_time, alert_status, chat_id, comment_text):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # Automatically add the server's host key (not recommended for production)
-        ssh.connect('192.168.1.217', port='27777', username='root', password='deduu')  # Substitute with your server's details
+        ssh.connect('192.168.1.120', port='2216', username='root', password='deduu')  # Substitute with your server's details
         try: 
             # Convert the datetime to a string, because we can only pass strings as arguments
 
             selected_date_time_str = selected_date_time.strftime('%Y%m%d%H%M')
-            #print(f"DATE: {selected_date_time_str}")  
-            # Form the command string
 
             python_command = ' '.join([
                 'python3',
@@ -152,18 +180,16 @@ class DropTreeWidget(QTreeWidget):
             print("Output of the command:")
             print(stdout.read().decode())
 
-            # Print the errors of the command
             print("Errors of the command:")
             print(stderr.read().decode())
 
-   #         ssh.exec_command(command_str)  # Execute the command
+   #     ssh.exec_command(command_str)  # Execute the command
         finally: 
             ssh.close()
 
 
     def on_ok_button_clicked(self, article_id, article_title, article_description):
         selected_date_time = self.datetime_field.dateTime().toPyDateTime()
-        #formatted_date_time = selected_date_time.strftime('%Y-%m-%d %H:%M')
         print(f"Selected Date: {selected_date_time}")  # Print article text
         comment_text = self.comment_field.toPlainText()
         print(f"Comment_text: {comment_text}")  # Print article text
@@ -176,6 +202,20 @@ class DropTreeWidget(QTreeWidget):
         self.run_remote_script(article_title, article_description, article_id, selected_date_time, "PENDING", chat_id, comment_text)
 
 
+    def create_new_folderr(self):
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle('New Folder')
+
+        self.input_field = QLineEdit(self.dialog)
+        ok_button = QPushButton('OK', self.dialog)
+        ok_button.clicked.connect(self.add_new_folder)
+
+        layout = QVBoxLayout(self.dialog)
+        layout.addWidget(self.input_field)
+        layout.addWidget(ok_button)
+
+        self.dialog.setLayout(layout)
+        self.dialog.show()
 
     def find_all_pending_alerts(self):
         # Fetch all pending alerts from the database
@@ -183,7 +223,6 @@ class DropTreeWidget(QTreeWidget):
         # Iterate through each pending alert and relaunch it
         for alert in pending_alerts:
             id, title, description, _, folder_id, _, _, _, trigger_date, alert_status, chat_id, comment = alert
-         #   id, title, description, date, _, trigger_date, alert_status, chat_id, comment, _ = alert
             article_title = title
             article_description = description
             article_id = id
@@ -218,16 +257,14 @@ class DropTreeWidget(QTreeWidget):
 
 
     def load_folders(self):
-        # Clear the current tree
         self.my_window.target_tree.clear()
 
-        # Fetch folders from the database
         folders = self.database_manager.get_all_folders()
         for folder in folders:
             folder_id, folder_name = folder
             folder_item = QTreeWidgetItem([folder_name])
             folder_item.setData(0, Qt.UserRole, folder_id)
-            folder_item.setData(0, Qt.UserRole+1, "folder")  # Set the item type to "folder"
+            folder_item.setData(0, Qt.UserRole+1, "folder")  # <--- Add this line
             folder_item.setText(0, folder_name)
             folder_item.setText(1, str(folder_id))  # Updated this line
             self.my_window.target_tree.addTopLevelItem(folder_item)
@@ -243,21 +280,33 @@ class DropTreeWidget(QTreeWidget):
                 folder_item.addChild(article_item)
                 if is_interesting:
                    article_item.setIcon(0, QIcon(image_path))
-                   folder_item.addChild(article_item)
-        self.my_window.target_tree.expandAll()
+                folder_item.addChild(article_item)    
 
-        return folders 
+            # Set the initial expanded/collapsed state of the folder based on the database
+            is_expanded = self.database_manager.get_folder_state(folder_id)
+            if is_expanded is not None:  # Only attempt to set the state if a valid state was returned
+                folder_item.setExpanded(is_expanded)
+            else:
+                 folder_item.setExpanded(True)
+        return folders
+#        self.my_window.target_tree.expandAll()
+
+
+
     def startDrag(self, event):
-        items = self.selectedItems()
-
+        items = self.my_window.target_tree.selectedItems()
+       # items = self.selectedItems()
         if items:
             drag = QDrag(self)
-            mimedata = self.model().mimeData(items)
+            model = self.model()
+            parent_index = self.my_window.target_tree.rootIndex()  # Assuming you want to use the root index
+            indexes = [model.index(self.my_window.target_tree.indexOfTopLevelItem(item), 0) for item in items]
+            mime_data = model.mimeData(indexes)
 
-            drag.setMimeData(mimedata)
+            drag.setMimeData(mime_data)
             drag.exec_(Qt.MoveAction) 
 
-
+     
     def dropEvent(self, event):
         source = event.source()
 
@@ -267,33 +316,34 @@ class DropTreeWidget(QTreeWidget):
 
             if parent_item:
                 for item in items:
-                    clone_item = item.clone()
-                    parent_item.addChild(clone_item)
+                    # Check if the parent_item is not the same as the dragged item
+                    if parent_item != item:
+                        clone_item = item.clone()
+                        parent_item.addChild(clone_item)
 
-                    # Remove the item from the source tree
-                    source.takeTopLevelItem(source.indexOfTopLevelItem(item))
+                        # Remove the item from the source tree
+                        if item.parent() is not None:
+                            item.parent().removeChild(item)
+                        else:
+                            source.invisibleRootItem().takeChild(source.indexOfTopLevelItem(item))
 
-                    # Print a message indicating that the article was dragged to the folder
-                    date = item.text(0)
-                    title = item.text(1)
-                    description = item.text(2)
-                    folder_name = parent_item.text(0)
-        #            folder_id = parent_item.data(0, Qt.UserRole)
-                   # folder_id = parent_item.text(1)
-                    folder_id = parent_item.data(0, Qt.UserRole)
-                    if folder_id is None:  # Check if folder_id is None
-                        folder_id = parent_item.text(1)  # Use text() instead
-                    print(f"Title '{title}', description '{description}', date '{date}', folderid {folder_id}, foldername '{folder_name}'")
-                    self.database_manager.save_article_to_folder(title, description, date, folder_id)
+                        # Print a message indicating that the article was dragged to the folder
 
-                    clone_item.setText(1, date)
-                    clone_item.setText(0, title)
-            event.accept()
+                        date = item.text(0)
+                        title = item.text(1)
+                        description = item.text(2)
+                        folder_name = parent_item.text(0)
+                        folder_id = parent_item.data(0, Qt.UserRole)
+                        if folder_id is None:
+                            folder_id = parent_item.text(1)
+                        print(f"Title '{title}', description '{description}', date '{date}', folderid {folder_id}, foldername '{folder_name}'")
+                        article_id = self.database_manager.save_article_to_folder(title, description, date, folder_id)
 
+                        clone_item.setData(0, Qt.UserRole, article_id)
+                        clone_item.setText(1, date)
+                        clone_item.setText(0, title)
 
-            event.accept()
-        else:
-            event.ignore()  
+        event.accept()
 
 
     def dropMimeData(self, parent, index, data, action):
@@ -351,64 +401,34 @@ class DropTreeWidget(QTreeWidget):
         # Fetch the existing text for the article
         existing_text = self.database_manager.get_article_text(article_id)
 
-        # Create a QDialog instance
         self.dialog = QDialog(self)
 
-        # Set window title
         self.dialog.setWindowTitle("Write Text")
 
-        # Create a QTextEdit instance
         self.text_editor = QTextEdit(self.dialog)
         self.text_editor.setPlainText(existing_text)  # Set the existing text
 
-        # Create a QPushButton instance
         self.insert_button = QPushButton("Insert", self.dialog)
         self.insert_button.clicked.connect(lambda: self.insert_text_to_database(article_id))
 
-        # Create a QVBoxLayout instance
         self.layout = QVBoxLayout(self.dialog)
-        # Add QTextEdit and QPushButton to QVBoxLayout
         self.layout.addWidget(self.text_editor)
         self.layout.addWidget(self.insert_button)
-        # Set layout
         self.dialog.setLayout(self.layout)
-        # Show QDialog
         self.load_folders()
         self.dialog.show()
-        
-
-
-    def create_new_folderr(self):
-        self.dialog = QDialog(self)
-        self.dialog.setWindowTitle('New Folder')
-
-        self.input_field = QLineEdit(self.dialog)
-        ok_button = QPushButton('OK', self.dialog)
-        ok_button.clicked.connect(self.add_new_folder)
-
-        layout = QVBoxLayout(self.dialog)
-        layout.addWidget(self.input_field)
-        layout.addWidget(ok_button)
-
-        self.dialog.setLayout(layout)
-        self.dialog.show()
-
 
 
     def add_new_folder(self):
         folder_name = self.input_field.text().strip()
         if folder_name:
-           # Add the new folder to the database and get the folder id
            folder_id = self.database_manager.add_new_folder(folder_name)
            print(f"Folder '{folder_name}' created with ID '{folder_id}'")
 
-           # Create a QTreeWidgetItem for the new folder
            folder_item = QTreeWidgetItem([folder_name])
 
-           # Set the UserRole data of the folder item to the ID of the new folder
            folder_item.setData(0, Qt.UserRole, folder_id)
 
-           # Add the new folder item to the tree view
            self.my_window.target_tree.addTopLevelItem(folder_item)
         
            self.dialog.close()
@@ -449,8 +469,8 @@ class DropTreeWidget(QTreeWidget):
         if selected_items:
             selected_item = selected_items[0]
 
-            article_id = selected_item.data(0, Qt.UserRole)  #article's ID
-            article_title = selected_item.text(0)  #article's title
+            article_id = selected_item.data(0, Qt.UserRole)  # Retrieve the article's ID
+            article_title = selected_item.text(0)  # Retrieve the article's title
 
             print(f"Selected item '{selected_item}', ID '{article_id}', title '{article_title}'")
             if article_id is not None:  # If the selected item is an article
@@ -469,5 +489,6 @@ if __name__ == "__main__":
     database_manager = DatabaseManager()
     monitor = NewsMonitor(database_manager)
     window = MyWindow(monitor, database_manager)  
+    market_data = MarketData()
     window.show()
     sys.exit(app.exec_())
