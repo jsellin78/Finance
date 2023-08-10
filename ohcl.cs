@@ -53,7 +53,6 @@ namespace cAlgo.Robots
 
         protected override void OnBar()
         {
-            // Do any additional processing on each bar, if needed
         }
 
         protected override void OnTick()
