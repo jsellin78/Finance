@@ -48,7 +48,6 @@ namespace cAlgo.Robots
         _currencyBars.Add("eurcad", MarketData.GetBars(TimeFrame.Minute15, "EURCAD"));
         _currencyBars.Add("euraud", MarketData.GetBars(TimeFrame.Minute15, "EURAUD"));
         _currencyBars.Add("cadjpy", MarketData.GetBars(TimeFrame.Minute15, "CADJPY"));
-            // Add additional currency pairs as needed
         }
 
         protected override void OnBar()
