@@ -18,6 +18,32 @@ import pandas as pd
 from joblib import dump
 from keras.layers import LeakyReLU, MaxPooling1D
 import faulthandler; faulthandler.enable()
+from keras.metrics import Precision, Recall
+from tensorflow.keras import backend as K
+import tensorflow as tf
+from tensorflow.keras.layers import Attention
+from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Flatten
+import shap 
+
+
+# Check if TensorFlow is built with CUDA
+print("Is TensorFlow built with CUDA:", tf.test.is_built_with_cuda())
+
+# Check if TensorFlow can access a GPU
+print("Is GPU available:", tf.test.is_gpu_available(cuda_only=False, min_cuda_compute_capability=None))
+
+
+if tf.test.is_gpu_available():
+    print("GPU is available")
+else:
+    print("GPU is not available")
+
+# Print CUDA and cuDNN version if GPU is available
+if tf.test.is_gpu_available():
+    print("CUDA version:", tf.sysconfig.get_build_info()['cuda_version'])
+    print("cuDNN version:", tf.sysconfig.get_build_info()['cudnn_version'])
 
 class ForexPredictor:
     def __init__(self, sequence_length, learning_rate):
@@ -51,6 +77,7 @@ class ForexPredictor:
         connection = self.test_set.connect()
         try:
             self.ohlc = pd.read_sql_table('fiftheen', con=connection)
+            print("Shape of the ohlc data:", self.ohlc.shape) # Print shape of ohlc_pattern
         except:
             connection.rollback()
             raise
@@ -60,24 +87,13 @@ class ForexPredictor:
 
 
     def preprocess_data(self):
-        #        self.ohlc[['body', 'upwiq', 'downwiq']] = self.ohlc[['body', 'upwiq', 'downwiq']].astype(int)
-        #self.ohlc_pattern[['body', 'upwiq', 'downwiq']] = self.ohlc_pattern[['body', 'upwiq', 'downwiq']].astype(int)
-        self.ohlc[['body', 'upwiq', 'downwiq']] = self.scaler.fit_transform(self.ohlc[['body', 'upwiq', 'downwiq']])
-        self.ohlc_pattern[['body', 'upwiq', 'downwiq']] = self.scaler.transform(self.ohlc_pattern[['body', 'upwiq', 'downwiq']])
-        print(self.ohlc.columns)
-        print(f"data: {self.ohlc}")
         self.ohlc = pd.get_dummies(self.ohlc, columns=['candle'])
         self.ohlc_pattern = pd.get_dummies(self.ohlc_pattern, columns=['candle'])
         self.features_pattern = self.ohlc_pattern[['body', 'upwiq', 'downwiq', 'candle_bullish', 'candle_bearish']].values
-        #self.target_pattern = self.ohlc_pattern['tag'].values
         self.features = self.ohlc[['body', 'upwiq', 'downwiq', 'candle_bullish', 'candle_bearish']].values
         self.target = self.ohlc['true_tag'].values
         self.target_pattern = self.ohlc_pattern.groupby('sequence_id')['date'].diff().fillna(pd.Timedelta(seconds=0))
-        self.ohlc = self.ohlc.sort_values('date', ascending=True)
-        #self.target_pattern = self.ohlc_pattern['tag'].values
-        #time_diff = self.ohlc_pattern.groupby('sequence_id')['date'].diff().fillna(pd.Timedelta(seconds=0))
-        #time_diff = self.ohlc_pattern['date'].diff().unique()  # assuming 'date' is your timestamp column
-        #print(time_diff)
+        self.ohlc = self.ohlc.sort_values(['ticker', 'date'], ascending=[True, True])
 
 
     def create_sequences(self, features, target, sequence_length):
@@ -154,7 +170,7 @@ class ForexPredictor:
             X_train_flat = self.X_train.reshape(self.X_train.shape[0], -1)
             y_train_flat = np.argmax(self.y_train, axis=1)  # inverse of to_categorical
             # Apply SMOTE
-            smote = SMOTE(k_neighbors=3, random_state=42) 
+            smote = SMOTE(k_neighbors=3, random_state=42)  # Use 3 neighbors instead of the default 5
             X_train_smote, y_train_smote = smote.fit_resample(X_train_flat, y_train_flat)
             # Reshape the sequences back to their original shape
             self.X_train_smote = X_train_smote.reshape(-1, self.X_train.shape[1], self.X_train.shape[2])
@@ -165,64 +181,76 @@ class ForexPredictor:
             self.y_train_smote = self.y_train
 
 
-
     def build_model(self):
-        model = Sequential()
+        input_shape = (self.X_train.shape[1], self.X_train.shape[2])
+        inputs = Input(shape=input_shape)
+
+        x = Conv1D(filters=64, kernel_size=1, kernel_initializer='he_normal')(inputs)
+        x = LeakyReLU(alpha=0.01)(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.2)(x)
+
+        x = Conv1D(filters=32, kernel_size=2, kernel_initializer='he_normal')(x)
+        x = LeakyReLU(alpha=0.01)(x)
+        x = MaxPooling1D(pool_size=2)(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.2)(x)
+
+        x = LSTM(50, return_sequences=True, dropout=0.2, recurrent_dropout=0.2)(x)
+        x = LSTM(25, return_sequences=True, dropout=0.2, recurrent_dropout=0.2)(x)
+
+        # Attention layer
+        attention_output = Attention()([x, x]) # Query and value are both the output of LSTM
+
+        x = Flatten()(attention_output)
+        x = Dense(100, activation='relu', kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.2)(x)
+
+        x = Dense(100, activation='relu', kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4), kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+        
+        x = Dense(100, activation='relu', kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4), kernel_initializer='he_normal')(x)
+        x = BatchNormalization()(x)
+
+        outputs = Dense(self.y_train.shape[1], activation='softmax')(x)
+
+        model = Model(inputs, outputs)
         self.model = model
-        # First Conv1D layer
-        model.add(Conv1D(filters=64, kernel_size=1, kernel_initializer='he_normal', input_shape=(self.X_train.shape[1], self.X_train.shape[2])))
-        model.add(LeakyReLU(alpha=0.01))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.2))
-
-        # Second Conv1D layer
-        model.add(Conv1D(filters=32, kernel_size=2, kernel_initializer='he_normal'))
-        model.add(LeakyReLU(alpha=0.01))
-        model.add(MaxPooling1D(pool_size=2))  
-        model.add(BatchNormalization())
-        model.add(Dropout(0.2))
-
-        # LSTM layers
-        model.add(LSTM(50, return_sequences=True, dropout=0.2, recurrent_dropout=0.2))  
-        model.add(LSTM(25, dropout=0.2, recurrent_dropout=0.2))
-
-        # Dense layers
-        model.add(Dense(100, activation='relu', kernel_initializer='he_normal'))
-        model.add(BatchNormalization())
-        model.add(Dropout(0.2))
-
-        model.add(Dense(100, activation='relu', kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4), kernel_initializer='he_normal'))
-        model.add(BatchNormalization())
-        
-        model.add(Dense(100, activation='relu', kernel_regularizer=regularizers.l1_l2(l1=1e-5, l2=1e-4), kernel_initializer='he_normal'))
-        model.add(BatchNormalization())
-        
-        model.add(Dense(self.y_train.shape[1], activation='softmax'))
 
         return model
 
 
-
     def compile_model(self):
-            # Compile the model
-            self.learning_rate = 0.02
-            optimizer = Adam(learning_rate=self.learning_rate)
-            self.model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-#            self.model.save('modell2.h5')
+        # Compile the model
+        self.learning_rate = 0.02
+        optimizer = Adam(learning_rate=self.learning_rate)
+        precision = Precision()
+        recall = Recall()
+        f1_score = F1Score()
+        self.model.compile(loss='categorical_crossentropy',
+                        optimizer=optimizer,
+                        metrics=['accuracy', precision, recall, f1_score])
+
 
 
     def train_model(self):
             # Train the model
-            self.model.fit(self.X_train, self.y_train, validation_data=(self.X_val, self.y_val), epochs=100, batch_size=32, class_weight=self.class_weights_dict, callbacks=[self.early_stopping])
-            # Model Prediction on the test dataset
+            history = self.model.fit(self.X_train, self.y_train, validation_data=(self.X_val, self.y_val), epochs=400, batch_size=32, class_weight=self.class_weights_dict, callbacks=[self.early_stopping])
+            # Accessing precision and recall
+            precision = history.history['precision']
+            recall = history.history['recall']
+            val_precision = history.history['val_precision']
+            val_recall = history.history['val_recall']        # ...
+            f1_score_values = history.history['f1_score']
             self.predictions = self.model.predict(self.test_sequences)
-            self.model.save("predict111.h5")
+            self.model.save("pre111.h5")
             self.predictions = self.model.predict(self.test_sequences)
 
     def predict(self):
         class_indices = {index: name for index, name in enumerate(self.le.classes_)}
         results_dict = {}
-        timestamp_column = 'date'  
+        timestamp_column = 'date'  # Assuming the timestamps are available in a column named 'date', adjust the column name if needed
         self.ohlc = self.ohlc.sort_values('date')
         for ticker in self.ohlc['ticker'].unique():
             ticker_data = self.ohlc[self.ohlc['ticker'] == ticker]
@@ -297,7 +325,6 @@ class ForexPredictor:
         all_predictions = []
         timestamp_column = 'date'
         self.ohlc = self.ohlc.sort_values('date')
-        print(self.ohlc.tail())
         for ticker in self.ohlc['ticker'].unique():
             ticker_data = self.ohlc[self.ohlc['ticker'] == ticker]
 
@@ -359,6 +386,26 @@ class ForexPredictor:
         for prediction in all_predictions:
             ticker, date, index, prob, class_name = prediction
             print(f"Ticker: {ticker}, Date: {date}, Index: {index}, Probability: {prob * 100}%, Predicted Class: {class_name}")
+
+class F1Score(tf.keras.metrics.Metric):
+    def __init__(self, name='f1_score', **kwargs):
+        super(F1Score, self).__init__(name=name, **kwargs)
+        self.precision_obj = Precision()
+        self.recall_obj = Recall()
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        self.precision_obj.update_state(y_true, y_pred, sample_weight)
+        self.recall_obj.update_state(y_true, y_pred, sample_weight)
+
+    def result(self):
+        precision = self.precision_obj.result()
+        recall = self.recall_obj.result()
+        return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
+
+    def reset_state(self):
+        self.precision_obj.reset_state()
+        self.recall_obj.reset_state()
+
 
 
 forex_predictor = ForexPredictor(sequence_length=3, learning_rate=0.02)
