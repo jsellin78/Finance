@@ -14,7 +14,6 @@ from keras.layers import BatchNormalization
 from tensorflow.keras import layers, Sequential
 import faulthandler; faulthandler.enable()
 from pandas import Timedelta
-import pandas as pd
 from joblib import dump
 from keras.layers import LeakyReLU, MaxPooling1D
 import faulthandler; faulthandler.enable()
