@@ -42,7 +42,7 @@ class DatabaseOperations:
             port="5432",
             database="forex_data",
             user="john",
-            password="****"
+            password=""
         )
 
 
@@ -135,8 +135,7 @@ class DatabaseOperations:
             print("Attempting to create table...")
             cur.execute(create_table_sql)
             print("Table created successfully.")
-            #print("Attempting to create hypertable...")
-            #cur.execute(create_hypertable_sql)
+
             print("Hypertable created successfully.")
             self.connection.commit()
             cur.close()
@@ -190,7 +189,7 @@ class DatabaseOperations:
         cur.close()
 
 
-    def copy_rows_to_sequence(self, ids, pattern_desc): #Copy rows find interesting to another table for machine learning processing.
+    def copy_rows_to_sequence(self, ids, pattern_desc): 
         cur = self.connection.cursor()
         cur.execute("SELECT nextval('fiftheen_sequences_sequence_id_seq')")
         next_id = cur.fetchone()[0]
@@ -259,7 +258,7 @@ class Socket:
     def __init__(self, db_manager):
         self.db_manager = db_manager
         self.retry_wait = 1
-        self.last_received_time = time.time()  # Change to time.time(), as it's synchronous
+        self.last_received_time = time.time()  
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
         self.start_email_warning_job()
@@ -358,7 +357,7 @@ class Socket:
 
 
     def send_email_warning(self):
-        print("send_email_warning called")  # add this line to ensure this method is being called.
+        print("send_email_warning called")  
         sender = 'sender'
         receivers = ['reciver']
         subject = 'Warning: Data Not Received'
