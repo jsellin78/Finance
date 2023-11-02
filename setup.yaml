@@ -1,13 +1,15 @@
 ---
 - name: download node
-  hosts: root
+  hosts: local
   gather_facts: true   
   tasks:
   -  include_vars: vars.yml
 
+
   - name: install all the required Neovim build modules
     apt:
       name:
+        - moreutils
         - rsync
         - git
         - ninja-build
@@ -30,7 +32,8 @@
         - pkg-config
         - libncurses5-dev
         - vim   
-        - xclip   
+        - xclip
+        - xsel   
         - sqlite3 
         - libsqlite3-dev
         - ripgrep  
@@ -53,15 +56,26 @@
         - libjpeg-progs
         - pavucontrol
         - pulseaudio
+        - pulseaudio-module-bluetooth 
+        - blueman 
         - rofi 
         - dbus-x11 
         - libnotify-bin
         - i3blocks 
         - maim 
         - picom  
-        - net-tools  
+        - net-tools
+        - libc6-dev 
+        - libxtst-dev 
+        - xorg-dev  
+        - lm-sensors 
+        - wakeonlan 
+        - ethtool
+        - slick-greeter
+        - webext-ublock-origin-firefox
       state: present   
-      
+
+
   - name: Edit parameters in sshd config to enable xauthority file         
     tags: replace4
     ansible.builtin.replace:
@@ -98,6 +112,29 @@
       sysctl -p 
     become: yes
 
+
+  - name: Ensure GTK config directories exist
+    tags: dir6
+    ansible.builtin.file:
+      path: '{{ item }}'
+      state: directory
+      mode: '0755'
+    with_items:
+      - '/root/.config'
+      - '/root/.config/gtk-3.0'
+
+
+  - name: Set GTK settings
+    tags: gtks
+    ansible.builtin.copy:
+      dest: '/root/.config/gtk-3.0/settings.ini'
+      content: |
+        [Settings]
+        gtk-enable-primary-paste=true
+        gtk-application-prefer-dark-theme=1
+      mode: '0700'
+
+
   - name: Create folder
     tags: folder1
     ansible.builtin.file:
@@ -115,6 +152,15 @@
       - '/root/Pictures'
       - '/root/.config/rofi'
       - '/root/.config/i3blocks'
+
+
+  - name: build autocutsel for easy copy paste between buffers 
+    tags: autocut
+    ansible.builtin.git:
+      repo: https://github.com/sigmike/autocutsel
+      dest: /root/.config/autocutsel
+    ignore_errors: true 
+
 
   - name: copy over config folder
     tags: cp
@@ -194,12 +240,6 @@
     with_items: 
       - 'alias nvim="/usr/local/bin/nvim.appimage"'
       - 'alias conf="cd /root/.config/nvim/lua/core/plugin_config"'
-      - 'alias serv5="ssh root@192.168.1.205 -p 20010"'
-      - 'alias nextcloud="ssh root@nextcloud -p 2223"'
-      - 'alias debianz="ssh root@192.168.1.108 -p 2222"'
-      - 'alias vm1="ssh root@vm1 -p 2217"'
-      - 'alias vm2="ssh root@192.168.1.225 -p 2218"'
-      - 'alias debian="ssh root@192.168.1.146 -p 2222"'
       - 'alias snap5="virsh snapshot-revert vm2 snapshot_5"'
       - 'PATH=$PATH:/usr/local/bin/'
 
@@ -226,8 +266,9 @@
     ansible.builtin.get_url:
       url: "{{ src1 }}"
       dest: "{{ dest1 }}"
-      mode: 0775
-  
+      mode: 0775 
+    ignore_errors: true
+
   - name: fix
     shell: >
       ls "{{ dest1 }}"*  
@@ -291,12 +332,70 @@
       dest: ~/.zshrc
       mode: push
 
+    # 1. Install required dependencies
+  - name: Install pyenv dependencies
+    become: true 
+    apt:
+      name:
+        - build-essential
+        - libssl-dev
+        - zlib1g-dev
+        - libbz2-dev
+        - libreadline-dev
+        - libsqlite3-dev
+        - wget
+        - curl
+        - llvm
+        - libncurses5-dev
+        - libncursesw5-dev
+        - xz-utils
+        - tk-dev
+        - libffi-dev
+        - liblzma-dev
+        - python3-openssl
+        - git
+      state: present
+
+    # 2. Clone pyenv repository to the desired user's home directory (assuming the user is 'root' here)
+  - name: Clone pyenv repository
+    git:
+      repo: 'https://github.com/pyenv/pyenv.git'
+      dest: '/root/.pyenv'
+      clone: yes
+      update: yes
+
+    # 3. Update shell configuration to setup pyenv (assuming bash shell here)
+  - name: Update zshrc for pyenv
+    lineinfile:
+      path: '/root/.zshrc'
+      line: '{{ item }}'
+    with_items:
+      - 'export PYENV_ROOT="$HOME/.pyenv"'
+      - 'export PATH="$PYENV_ROOT/bin:$PATH"'
+      - 'eval "$(pyenv init --path)"'
+      - 'eval "$(pyenv virtualenv-init -)"'
+
+    # 4. Install specific Python version using pyenv and set it as global (e.g., 3.8.5 here)
+  - name: Install Python 3.8.5 with pyenv and set as global
+    become: no  # Switch back to the target user for pyenv operations
+    shell: |
+      source /root/.zshrc
+      pyenv install 3.8.5
+      pyenv global 3.8.5
+    args:
+       executable: /bin/zsh
+
+  # Ensure you refresh the shell or reload the environment to use pyenv and the desired Python version
+
   - name: copy over vimrc folder
     tags: vimrc
     synchronize:
       src: ~/.vimrc
       dest: ~/.vimrc 
       mode: push
+
+
+
 
   - name: Install Vim plug for ansible
     tags: plugg
@@ -344,26 +443,36 @@
     with_items: 
       - 'deb http://ppa.launchpad.net/ansible/ansible/ubuntu bionic main'
 
-  - name: Add keys for ansible  
-    tags: keyss
-    ansible.builtin.apt_key:
-      id: 93C4A3FD7BB9C367
-      keyserver: keyserver.ubuntu.com
-      state: present
-    become: true
+        #  - name: Add keys for ansible  
+        # tags: keyss
+        #ansible.builtin.apt_key:
+        #id: 93C4A3FD7BB9C367
+        # keyserver: keyserver.ubuntu.com
+        #state: present
+        #become: true
 
   - name: Update and install ansible 
     tags: ansi 
     ansible.builtin.apt:
       update_cache: yes
       name: ansible
-      state: latest 
-  
+      state: latest  
+    ignore_errors: true
+
   - name: remove ansible if present and download it with pip3 instead 
     tags: ansi2 
     ansible.builtin.apt:
       name: ansible 
       state: absent 
+
+
+  - name: Install required packages
+    apt:
+      name:
+         - ansible
+         - ansible-lint
+      state: present
+
 
   - name: install Ansible-lint
     tags: lint
@@ -445,18 +554,26 @@
     shell: > 
       tmux send-keys -t source123 "cargo install tree-sitter-cli" Enter  
 
-  - name: add keys for yarn 
-    shell: > 
-      curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+#   - name: Manually Add the APT Key for Yarn
+#     ansible.builtin.command: 
+#       cmd: wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -    
+#     ignore_errors: true 
+
+  - name: Add the Yarn Repository
+    ansible.builtin.apt_repository:
+      repo: "deb https://dl.yarnpkg.com/debian/ stable main"
+      filename: 'yarn'
+      state: present
 
   - name: update cache 
     ansible.builtin.apt:
       update_cache: yes
 
-  - name: install yarn 
-    shell: > 
-      apt install --no-install-recommends yarn
-    become: yes
+  - name: Install Yarn
+    ansible.builtin.apt:
+      name: yarn
+      state: present
+      install_recommends: no
 
   - name: Source zshrc file
     tags: rc
@@ -483,7 +600,7 @@
     shell: > 
       npm i -g bash-language-server
 
-  - name: Create config file for paste button and for xbindkeys  
+  - name: Create config file for paste button and for xbindkeys 
     tags: file6 
     ansible.builtin.file:
       path: '{{ item }}' 
@@ -496,7 +613,8 @@
       - '/etc/systemd/system/pulseaudio.service'
       - '/root/.config/rofi'
       - '/root/.xinitrc'
-      - '/root/.Xauthority'  
+      - '/root/.Xauthority'
+    ignore_errors: true 
       
   - name: Add configs to xinitrc  
     tags: xinitrc 
@@ -508,14 +626,17 @@
       - 'i3-msg restart > /dev/null; echo "restarting i3 config"'
 
 
-  - name: Make so that we can paste with the middle mouse button 
+  - name: Prefer dark theme on all application && Make so that we can paste with the middle mouse button 
+    become: true 
     tags: line2
     ansible.builtin.lineinfile:
       path: /root/.config/gtk-3.0/settings.ini
       line: '{{ item }}'
     with_items: 
       - '[Settings]'
-      - '[gtk-enable-primary-paste=true]'
+      - 'gtk-enable-primary-paste=true'
+      - 'gtk-application-prefer-dark-theme=1'
+    ignore_errors: true 
 
   - name: Disable wayland and enable X11  
     tags: x11 
@@ -665,69 +786,69 @@
     shell: nvim --headless -c +source ~/.config/nvim/lua/core/plugin_config/init.vim +PlugUpdate +qa
 
   - name: Add ansible-language-server 
-    tags: lang 
+    tags: lang222 
     shell: >
-      nvim --headless "+:MasonInstall ansible-language-server" +qa
+      nvim --headless "+:MasonInstall ansible-language-server --force" +qa
 
   - name: Add aws-language-server
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall awk-language-server" +qa
+      nvim --headless "+:MasonInstall awk-language-server --force" +qa
  
   - name: Add bash-debug-adapter
     tags: lang12 
     shell: >
-      nvim --headless "+:MasonInstall bash-debug-adapter" +qa
+      nvim --headless "+:MasonInstall bash-debug-adapter --force" +qa
 
   - name: Add diagnostic-languageserver
     tags: lang13 
     shell: >
-      nvim --headless "+:MasonInstall diagnostic-languageserver" +qa
+      nvim --headless "+:MasonInstall diagnostic-languageserver --force " +qa
 
   - name: Add lint flake8  
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall flake8" +qa
+      nvim --headless "+:MasonInstall flake8 --force" +qa
 
   - name: Add jedi-language-server
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall jedi-language-server" +qa
+      nvim --headless "+:MasonInstall jedi-language-server --force" +qa
 
   - name: Add jq language-server 
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall jq" +qa
+      nvim --headless "+:MasonInstall jq --force" +qa
 
   - name: Add lua-language-server
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall lua-language-server" +qa
+      nvim --headless "+:MasonInstall lua-language-server --force" +qa
 
   - name: Add pyright 
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall pyright" +qa
+      nvim --headless "+:MasonInstall pyright --force" +qa
 
   - name: Add python-lsp-server 
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall python-lsp-server" +qa
+      nvim --headless "+:MasonInstall python-lsp-server --force" +qa
 
   - name: Add shell-check language-server 
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall shellcheck" +qa
+      nvim --headless "+:MasonInstall shellcheck --force" +qa
     
   - name: Add yaml-language-server
     tags: lang 
     shell: >
-      nvim --headless "+:MasonInstall yaml-language-server" +qa
+      nvim --headless "+:MasonInstall yaml-language-server --force" +qa
       
   - name: Add yamlint language server 
     tags: yamllint 
     shell: >
-      nvim --headless "+:MasonInstall yamllint" +qa
+      nvim --headless "+:MasonInstall yamllint --force" +qa
 
   
   - name: copy over config folder
@@ -781,7 +902,23 @@
         - python3-pillow 
         - python3-i3ipc   
       state: present    
- 
+
+
+  - name: add lightdm instead of gdm3 
+    tags: lightdm 
+    shell: >
+      echo "/usr/sbin/lightdm" > /etc/X11/default-display-manager
+
+  - name: add lightdm instead of gdm3 
+    tags: lightdm 
+    shell: >
+      DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true dpkg-reconfigure lightdm
+
+  - name: add lightdm instead of gdm3 
+    tags: lightdm 
+    shell: >
+      echo set shared/default-x-display-manager lightdm | debconf-communicate
+
   - name: enable light dm 
     tags: light
     shell: >
@@ -793,11 +930,20 @@
       tmux send-keys -t source123 "" Enter Enter   
    
   - name: make sure service is enabled by default 
-    tags: lightdm123
+    become: true 
+    tags: lightdm123 #ERROR 
     systemd:
       name: lightdm 
       enabled: true   
-    register: service12 
+    ignore_errors: true 
+
+  - name: start lightdm 
+    become: true
+    systemd:
+      name: lightdm 
+      state: started
+    ignore_errors: true 
+
 
   - name: Ignore lid   
     tags: replace 
@@ -824,7 +970,7 @@
 
 
   - name: Add systemd script for Pulseaudio.  
-    tags: systemd1 
+    tags: systemd12 
     ansible.builtin.lineinfile:
       path: /etc/systemd/system/pulseaudio.service 
       line: '{{ item }}'
@@ -853,27 +999,83 @@
       enabled: true 
 
   - name: add parameters to pulseaudio      
-    tags: replace3 
+    tags: replace45 
     ansible.builtin.replace:
       path: /etc/pulse/client.conf  
       regexp: '^; default-server =' 
       replace: "default-server = /var/run/pulse/native"   
 
   - name: add parameters to Pulseaudio       
-    tags: replace4
+    tags: replace56
     ansible.builtin.replace:
       path: /etc/pulse/client.conf  
       regexp: '^; autospawn = yes' 
       replace: 'autospawn = no'
 
   - name: Add add root user to pulse group 
-    tags: pulse12 
+    tags: pulse123
     user:
       name: pulse-access
       groups: sudo 
       append: yes 
     become: yes
- 
+
+  - name: Remove existing Firefox
+    apt:
+      name: firefox
+      state: absent
+      purge: yes
+
+  - name: Download Firefox 115.3.0esr
+    get_url:
+      url: https://download.mozilla.org/?product=firefox-115.3.0esr&os=linux64&lang=en-US
+      dest: /tmp/firefox-115.3.0esr.tar.bz2
+      mode: '0755'
+
+  - name: Extract the Firefox tarball
+    unarchive:
+      src: /tmp/firefox-115.3.0esr.tar.bz2
+      dest: /tmp/
+      remote_src: yes
+
+  - name: Move Firefox to /opt/
+    copy:
+      src: /tmp/firefox/
+      dest: /opt/firefox/
+      remote_src: yes
+
+  - name: Create symbolic link to new Firefox
+    file:
+      src: /opt/firefox/firefox
+      dest: /usr/bin/firefox
+      state: link
+
+
+  - name: Ensure the Firefox extensions directory exists
+    ansible.builtin.file:
+      path: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/'
+      state: directory
+
+  - name: Copy over Firefox extension
+    tags: vimium
+    synchronize:
+      src: /root/.mozilla/firefox/s7fid9o7.default-esr/extensions/vimium-c@gdh1995.cn.xpi 
+      dest: /root/.mozilla/firefox/s7fid9o7.default-esr/extensions/vimium-c@gdh1995.cn.xpi 
+      mode: push
+
+  - name: Copy Dark Reader XPI to target machine
+    ansible.builtin.copy:
+      src: /root/.mozilla/firefox/s7fid9o7.default-esr/extensions/addon@darkreader.org.xpi'
+      dest: /root/.mozilla/firefox/s7fid9o7.default-esr/extensions/addon@darkreader.org.xpi
+      mode: push
+
+  - name: copy over rofi config folder 
+    tags: cp22
+    synchronize:
+      src: /root/.local/share/rofi/themes/squared-everforest.rasi
+      dest: /root/.local/share/rofi/themes/squared-everforest.rasi 
+      mode: push
+
   - name: copy over rofi config folder 
     tags: cp111
     synchronize:
@@ -881,11 +1083,6 @@
       dest: /root/.config/rofi/config.rasi 
       mode: push
 
-  - name: Clone rofi themes repo
-    tags: rofi2
-    ansible.builtin.git:
-      repo: https://github.com/lr-tech/rofi-themes-collection.git
-      dest: /root/.local/share/rofi
 
         #  - name: copy over theme you want to use for dmenu   
         # tags: dmenu1 
@@ -913,6 +1110,188 @@
       src: /root/.zsh_history
       dest: /root/.zsh_history
       mode: push
+
+  - name: Remove known bugg with bluetooth and linux    
+    ansible.builtin.file:
+      path: /var/lib/bluetooth
+      state: absent 
+
+        #  - name: Install Neovim plugins
+        #    ansible.builtin.command:
+        #   cmd: nvim +PlugInstall +qall
+        # warn: no
+
+  - name: Install coc.nvim extensions
+    ansible.builtin.command:
+      cmd: nvim +CocInstall coc-snippets +qall
+      warn: no
+
+  - name: Install 'coc-snippets' and 'coc-python' extensions
+    ansible.builtin.shell:
+      cmd: |
+        echo -e ':CocInstall coc-snippets\n:CocInstall coc-python\n:qa' | nvim
+      warn: no
+
+  - name: Setup Coc preferences
+    ansible.builtin.blockinfile:
+      path: ~/.vim/coc-settings.json
+      create: yes
+      block: |
+        {
+          "coc.preferences.snippetEngine": "ultisnips",
+          "coc.source.snippets.priority": 1
+        }
+
+  - name: Install 'coc-snippets', 'coc-python' and 'coc-omnisharp' extensions
+    ansible.builtin.shell:
+      cmd: |
+        echo -e ':CocInstall coc-snippets\n:CocInstall coc-python\n:CocInstall coc-omnisharp\n:qa' | nvim
+      warn: no
+
+  - name: Ensure black background on firefox 
+    ansible.builtin.file:
+        path: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/'
+        state: directory
+
+  - name: Copy Dark Reader XPI to target machine
+    tags: darkreader 
+    synchronize:
+        src: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/addon@darkreader.org.xpi'
+        dest: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/addon@darkreader.org.xpi'
+        mode: push
+
+
+  - name: Copy smooth scrolling
+    tags: smooth
+    synchronize:
+        src: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/yetanothersmoothscrollingwe@kataho.xpi'
+        dest: '~/.mozilla/firefox/s7fid9o7.default-esr/extensions/yetanothersmoothscrollingwe@kataho.xpi'
+        mode: push
+
+
+  - name: Ensure /usr/local/bin exists
+    ansible.builtin.file:
+        path: /usr/local/bin
+        state: directory
+
+  - name: Deploy rofi logout script
+    tags: logout
+    ansible.builtin.copy:
+        content: |
+            #!/bin/bash
+
+            CHOICE=$(echo -e "Lock\nLogout\nReboot\nShutdown" | rofi -dmenu -p "System" -width 20 -lines 4 -font "DejaVu Sans Mono 12")
+
+            case "$CHOICE" in
+            "Lock")
+            betterlockscreen -l 
+            ;;
+            "Logout")
+            i3-msg exit
+            ;;
+            "Reboot")
+            systemctl reboot
+            ;;
+            "Shutdown")
+            systemctl poweroff
+            ;;
+            esac
+        dest: /usr/local/bin/rofi-logout
+        mode: '0755'
+
+  - name: Add hotkey to i3 config to invoke rofi-logout script
+    tags: logout
+    ansible.builtin.lineinfile:
+        path: ~/.config/i3/config
+        line: 'bindsym $mod+Shift+x exec /usr/local/bin/rofi-logout'
+
+
+  - name: Ensure ansible.cfg exists and has correct content
+    tags: ansible
+    ansible.builtin.copy:
+      dest: "{{ ansible_env.HOME }}/ansible.cfg"
+      content: |
+        [defaults]
+        inventory = ./hosts
+      force: no # This ensures existing files aren't overwritten
+
+  - name: Ensure hosts file exists and has localhost defined
+    ansible.builtin.copy:
+      dest: "{{ ansible_env.HOME }}/hosts"
+      content: |
+        localhost ansible_connection=local
+      force: no
+
+
+  - name: Get network interface associated with bridge_ports
+    tags: wol 
+    become: yes
+    shell: "grep -E 'bridge_ports' /etc/network/interfaces | awk '{print $2}'"
+    register: bridge_iface
+    changed_when: false
+
+  - name: Get Wake-on-LAN status for the bridge interface
+    tags: wol 
+    command: "ethtool {{ bridge_iface.stdout }}"
+    register: ethtool_output
+    changed_when: false
+
+  - name: Enable Wake-on-LAN if not set to g for the bridge interface
+    tags: wol 
+    command: "sudo ethtool -s {{ bridge_iface.stdout }} wol g"
+    when: "'Wake-on: g' not in ethtool_output.stdout"
+
+  - name: Create systemd service for Wake-on-LAN
+    tags: wol 
+    copy:
+      dest: /etc/systemd/system/wol@.service
+      content: |
+        [Unit]
+        Description=Wake-on-LAN for %i
+        After=network.target
+
+        [Service]
+        ExecStart=/sbin/ethtool -s %i wol g
+        Type=oneshot
+
+        [Install]
+        WantedBy=multi-user.target
+
+  - name: Enable and start Wake-on-LAN service for the bridge interface
+    tags: wol 
+    systemd:
+      name: wol@{{ bridge_iface.stdout }}
+      enabled: yes
+      state: started
+
+  - name: Set Ctrl+C as Copy in GNOME Terminal
+    become: yes
+    command: dconf write /org/gnome/terminal/legacy/keybindings/copy "'<Primary>c'"
+
+  - name: Set Ctrl+V as Paste in GNOME Terminal
+    become: yes
+    command: dconf write /org/gnome/terminal/legacy/keybindings/paste "'<Primary>v'"
+
+  - name: Ensure slick-greeter is set as the greeter session in lightdm.conf
+    ansible.builtin.lineinfile:
+      path: /etc/lightdm/lightdm.conf
+      regexp: '^greeter-session='
+      line: 'greeter-session=slick-greeter'
+      state: present
+
+
+  - name: Set automatic suspend to 'off'
+    command: "dbus-launch --exit-with-session gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'"
+    become_user: "{{ ansible_user }}"
+    changed_when: False
+
+  - name: Set screen blank to 'never'
+    command: "dbus-launch --exit-with-session gsettings set org.gnome.desktop.session idle-delay 0"
+    become_user: "{{ ansible_user }}"
+    changed_when: False
+
+
+# etanothersmoothscrollingwe@kataho.xpi
 
 
 
