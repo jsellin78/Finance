@@ -1,0 +1,559 @@
+{"meta":{"type":"db","canSave":true,"canEdit":true,"canAdmin":true,"canStar":true,"canDelete":true,"slug":"node-full","url":"/d/rYdddlPWk/node-full","expires":"0001-01-01T00:00:00Z","created":"2023-03-10T12:09:24Z","updated":"2024-04-03T00:01:59Z","updatedBy":"admin","createdBy":"admin","version":56,"hasAcl":false,"isFolder":false,"folderId":0,"folderUid":"","folderTitle":"General","folderUrl":"","provisioned":false,"provisionedExternalId":"","annotationsPermissions":{"dashboard":{"canAdd":true,"canEdit":true,"canDelete":true},"organization":{"canAdd":true,"canEdit":true,"canDelete":true}},"hasPublicDashboard":false,"publicDashboardAccessToken":"","publicDashboardUid":"","publicDashboardEnabled":false},"dashboard":{"annotations":{"list":[{"$$hashKey":"object:1058","builtIn":1,"datasource":{"type":"datasource","uid":"grafana"},"enable":true,"hide":true,"iconColor":"rgba(0, 211, 255, 1)","name":"Annotations \u0026 Alerts","target":{"limit":100,"matchAny":false,"tags":[],"type":"dashboard"},"type":"dashboard"},{"datasource":{"type":"prometheus","uid":"CZMwdDAVk"},"enable":true,"expr":"changes(node_boot_time_seconds{instance=\"$node\"}[$__rate_interval])","iconColor":"red","name":"Reboot"}]},"editable":true,"fiscalYearStartMonth":0,"gnetId":1860,"graphTooltip":0,"id":17,"links":[{"icon":"external link","tags":[],"targetBlank":true,"title":"GitHub","type":"link","url":"https://github.com/rfmoz/grafana-dashboards"},{"icon":"external link","tags":[],"targetBlank":true,"title":"Grafana","type":"link","url":"https://grafana.com/grafana/dashboards/1860"}],"liveNow":true,"panels":[{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"custom":{"align":"left","displayMode":"auto","filterable":false,"inspect":false},"mappings":[],"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":80}]},"unit":"none"},"overrides":[{"matcher":{"id":"byName","options":"CPU"},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"uptime"},"properties":[{"id":"unit","value":"Days"}]},{"matcher":{"id":"byName","options":"TIme"},"properties":[{"id":"custom.width","value":186}]},{"matcher":{"id":"byName","options":"CPU "},"properties":[{"id":"unit","value":"percentunit"}]},{"matcher":{"id":"byName","options":"Memory"},"properties":[{"id":"unit","value":"percent"}]}]},"gridPos":{"h":25,"w":16,"x":0,"y":0},"id":325,"maxDataPoints":200,"options":{"footer":{"fields":"","reducer":["sum"],"show":false},"showHeader":true,"sortBy":[{"desc":true,"displayName":"CPU "}]},"pluginVersion":"9.3.2","repeatDirection":"h","targets":[{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"editorMode":"code","exemplar":false,"expr":"(\n  (1 - max by (instance) (rate(node_cpu_seconds_total{job=\"linux\", mode=\"idle\"}[1m]))) * 100\n) \n/ on(instance) group_left\ncount without(cpu) (node_cpu_seconds_total{instance=~\"$nodes\", job=\"linux\", mode=\"idle\"})\n","format":"table","instant":true,"legendFormat":"{{ nodes }} CPU","range":false,"refId":"A"},{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"editorMode":"code","exemplar":false,"expr":"100 * (1 - (avg by (instance) (node_memory_MemAvailable_bytes) / avg by (instance) (node_memory_MemTotal_bytes)))","format":"table","hide":false,"instant":true,"legendFormat":"{{ nodes }} Mem","range":false,"refId":"B"},{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"editorMode":"code","exemplar":false,"expr":"(time() - node_boot_time_seconds{instance=~\"$nodes\", job=\"linux\"}) / 86400","format":"table","hide":false,"instant":true,"legendFormat":"{{ nodes }} uptime","range":false,"refId":"D"},{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"editorMode":"code","exemplar":false,"expr":"node_load5{instance=~\"$nodes\"}","format":"table","hide":false,"instant":true,"legendFormat":"{{ nodes }} 5m_load","range":true,"refId":"E"},{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"editorMode":"code","exemplar":true,"expr":"count without(cpu) (node_cpu_seconds_total{instance=~\"$nodes\", job=\"linux\", mode=\"idle\"})","format":"table","hide":false,"instant":true,"legendFormat":"{{ nodes }} Cores","range":true,"refId":"F"}],"title":"Panel Title","transformations":[{"id":"joinByField","options":{"byField":"instance","mode":"outer"}},{"id":"organize","options":{"excludeByName":{"Time 1":true,"Time 2":true,"Time 3":true,"Time 4":true,"Time 5":true,"Value #A":false,"Value #B":false,"Value #C":true,"Value #D":false,"Value #E":true,"__name__":true,"__name__ 1":true,"__name__ 2":true,"hostname 2":true,"hostname 3":true,"instance":false,"job":true,"job 1":true,"job 2":true,"job 3":true,"mode":true},"indexByName":{"Time 1":3,"Time 2":7,"Time 3":14,"Time 4":2,"Time 5":12,"Value #A":5,"Value #B":8,"Value #D":9,"Value #E":6,"Value #F":4,"__name__":15,"hostname 1":0,"hostname 2":17,"hostname 3":18,"instance":1,"job 1":10,"job 2":11,"job 3":13,"mode":16},"renameByName":{"10.232.3.100:9100 Mem":"","Time":"","Time 1":"TIme","Time 2":"","Time 4":"Last fetch","Value":"Mem","Value #A":"CPU ","Value #B":"Memory","Value #D":"uptime","Value #E":"5m_load","Value #F":"CPU Cores","hostname 1":"Hosts","instance":"Nodes","instance 1":"Nodes","job 1":""}}},{"id":"groupBy","options":{"fields":{"10.232.3.100:9100 Mem":{"aggregations":[],"operation":"aggregate"},"10.232.3.88:9100 Mem":{"aggregations":[],"operation":"aggregate"},"CPU":{"aggregations":["last"],"operation":"aggregate"},"Time":{"aggregations":[],"operation":"aggregate"}}}}],"type":"table"}],"refresh":"5s","schemaVersion":37,"style":"dark","tags":["linux"],"templating":{"list":[{"current":{"selected":false,"text":"Prometheus","value":"Prometheus"},"hide":0,"includeAll":false,"label":"datasource","multi":false,"name":"DS_PROMETHEUS","options":[],"query":"prometheus","queryValue":"","refresh":1,"regex":"","skipUrlSync":false,"type":"datasource"},{"current":{"selected":false,"text":"linux","value":"linux"},"datasource":{"type":"prometheus","uid":"CZMwdDAVk"},"definition":"","hide":0,"includeAll":false,"label":"Job","multi":false,"name":"job","options":[],"query":{"query":"label_values(node_uname_info, job)","refId":"Prometheus-job-Variable-Query"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false},{"current":{"selected":true,"text":["All"],"value":["$__all"]},"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"definition":"label_values(node_uname_info{job=\"$job\"}, instance)","hide":0,"includeAll":true,"label":"Host:","multi":true,"name":"node","options":[],"query":{"query":"label_values(node_uname_info{job=\"$job\"}, instance)","refId":"Prometheus-node-Variable-Query"},"refresh":1,"regex":"","skipUrlSync":false,"sort":1,"tagValuesQuery":"","tagsQuery":"","type":"query","useTags":false},{"current":{"selected":false,"text":"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+","value":"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+"},"hide":2,"includeAll":false,"multi":false,"name":"diskdevices","options":[{"selected":true,"text":"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+","value":"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+"}],"query":"[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+","skipUrlSync":false,"type":"custom"},{"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"filters":[],"hide":0,"name":"Filters","skipUrlSync":false,"type":"adhoc"},{"current":{"selected":true,"text":["All"],"value":["$__all"]},"datasource":{"type":"prometheus","uid":"${DS_PROMETHEUS}"},"definition":"label_values(node_exporter_build_info, instance)","hide":1,"includeAll":true,"label":"nodes","multi":true,"name":"nodes","options":[],"query":{"query":"label_values(node_exporter_build_info, instance)","refId":"StandardVariableQuery"},"refresh":1,"regex":"","skipUrlSync":false,"sort":0,"type":"query"}]},"time":{"from":"now-5m","to":"now"},"timepicker":{"refresh_intervals":["5s","10s","30s","1m","5m"],"time_options":["5m","15m","1h","6h","12h","24h","2d","7d","30d"]},"timezone":"browser","title":"Node Full","uid":"rYdddlPWk","version":56,"weekStart":""}}
+
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.3.2"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "$$hashKey": "object:1058",
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "enable": true,
+        "expr": "changes(node_boot_time_seconds{instance=\"$node\"}[$__rate_interval])",
+        "iconColor": "red",
+        "name": "Reboot"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "gnetId": 1860,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [
+    {
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "GitHub",
+      "type": "link",
+      "url": "https://github.com/rfmoz/grafana-dashboards"
+    },
+    {
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "Grafana",
+      "type": "link",
+      "url": "https://grafana.com/grafana/dashboards/1860"
+    }
+  ],
+  "liveNow": true,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "left",
+            "displayMode": "auto",
+            "filterable": false,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "uptime"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Days"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TIme"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU "
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Memory"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 25,
+        "w": 16,
+        "x": 0,
+        "y": 0
+      },
+      "id": 325,
+      "maxDataPoints": 200,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "CPU "
+          }
+        ]
+      },
+      "pluginVersion": "9.3.2",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(\n  (1 - max by (instance) (rate(node_cpu_seconds_total{job=\"linux\", mode=\"idle\"}[1m]))) * 100\n) \n/ on(instance) group_left\ncount without(cpu) (node_cpu_seconds_total{instance=~\"$nodes\", job=\"linux\", mode=\"idle\"})\n",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{ nodes }} CPU",
+          "range": false,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "100 * (1 - (avg by (instance) (node_memory_MemAvailable_bytes) / avg by (instance) (node_memory_MemTotal_bytes)))",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "{{ nodes }} Mem",
+          "range": false,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "(time() - node_boot_time_seconds{instance=~\"$nodes\", job=\"linux\"}) / 86400",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "{{ nodes }} uptime",
+          "range": false,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "node_load5{instance=~\"$nodes\"}",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "{{ nodes }} 5m_load",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "count without(cpu) (node_cpu_seconds_total{instance=~\"$nodes\", job=\"linux\", mode=\"idle\"})",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "{{ nodes }} Cores",
+          "range": true,
+          "refId": "F"
+        }
+      ],
+      "title": "Panel Title",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "instance",
+            "mode": "outer"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time 1": true,
+              "Time 2": true,
+              "Time 3": true,
+              "Time 4": true,
+              "Time 5": true,
+              "Value #A": false,
+              "Value #B": false,
+              "Value #C": true,
+              "Value #D": false,
+              "Value #E": true,
+              "__name__": true,
+              "__name__ 1": true,
+              "__name__ 2": true,
+              "hostname 2": true,
+              "hostname 3": true,
+              "instance": false,
+              "job": true,
+              "job 1": true,
+              "job 2": true,
+              "job 3": true,
+              "mode": true
+            },
+            "indexByName": {
+              "Time 1": 3,
+              "Time 2": 7,
+              "Time 3": 14,
+              "Time 4": 2,
+              "Time 5": 12,
+              "Value #A": 5,
+              "Value #B": 8,
+              "Value #D": 9,
+              "Value #E": 6,
+              "Value #F": 4,
+              "__name__": 15,
+              "hostname 1": 0,
+              "hostname 2": 17,
+              "hostname 3": 18,
+              "instance": 1,
+              "job 1": 10,
+              "job 2": 11,
+              "job 3": 13,
+              "mode": 16
+            },
+            "renameByName": {
+              "10.232.3.100:9100 Mem": "",
+              "Time": "",
+              "Time 1": "TIme",
+              "Time 2": "",
+              "Time 4": "Last fetch",
+              "Value": "Mem",
+              "Value #A": "CPU ",
+              "Value #B": "Memory",
+              "Value #D": "uptime",
+              "Value #E": "5m_load",
+              "Value #F": "CPU Cores",
+              "hostname 1": "Hosts",
+              "instance": "Nodes",
+              "instance 1": "Nodes",
+              "job 1": ""
+            }
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "10.232.3.100:9100 Mem": {
+                "aggregations": [],
+                "operation": "aggregate"
+              },
+              "10.232.3.88:9100 Mem": {
+                "aggregations": [],
+                "operation": "aggregate"
+              },
+              "CPU": {
+                "aggregations": [
+                  "last"
+                ],
+                "operation": "aggregate"
+              },
+              "Time": {
+                "aggregations": [],
+                "operation": "aggregate"
+              }
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 37,
+  "style": "dark",
+  "tags": [
+    "linux"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Prometheus",
+          "value": "Prometheus"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "datasource",
+        "multi": false,
+        "name": "DS_PROMETHEUS",
+        "options": [],
+        "query": "prometheus",
+        "queryValue": "",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Job",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": {
+          "query": "label_values(node_uname_info, job)",
+          "refId": "Prometheus-job-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(node_uname_info{job=\"$job\"}, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Host:",
+        "multi": true,
+        "name": "node",
+        "options": [],
+        "query": {
+          "query": "label_values(node_uname_info{job=\"$job\"}, instance)",
+          "refId": "Prometheus-node-Variable-Query"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+",
+          "value": "[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "diskdevices",
+        "options": [
+          {
+            "selected": true,
+            "text": "[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+",
+            "value": "[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+"
+          }
+        ],
+        "query": "[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "filters": [],
+        "hide": 0,
+        "name": "Filters",
+        "skipUrlSync": false,
+        "type": "adhoc"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "prometheus",
+          "uid": "${DS_PROMETHEUS}"
+        },
+        "definition": "label_values(node_exporter_build_info, instance)",
+        "hide": 1,
+        "includeAll": true,
+        "label": "nodes",
+        "multi": true,
+        "name": "nodes",
+        "options": [],
+        "query": {
+          "query": "label_values(node_exporter_build_info, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Node Full",
+  "uid": "rYdddlPWk",
+  "version": 56,
+  "weekStart": ""
+}
