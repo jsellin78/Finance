@@ -1,0 +1,54 @@
+---
+
+- name: Perform system checks
+  block: 
+    - name: Check if Disk sda exists and has minimum size of 35GB
+      ansible.builtin.assert:
+        that: "'sda' in ansible_devices and (ansible_devices['sda'].size | regex_replace(' GB', '') | float) >= 35"
+        fail_msg: "Disk sda does not exist or is smaller than 35GB."
+        success_msg: "Requirement passed: Disk sda exists and is at least 35GB."
+    
+    - name: Check if Disk sdb exists and has minimum size of 100GB
+      ansible.builtin.assert:
+        that: "'sdb' in ansible_devices and (ansible_devices['sdb'].size | regex_replace(' GB', '') | float) >= 100"
+        fail_msg: "Disk sdb does not exist or is smaller than 100GB."
+        success_msg: "Requirement passed: Disk sdb exists and is at least 100GB."
+    
+    - name: Check if Disk sdc exists and has minimum size of 100GB
+      ansible.builtin.assert:
+        that: "'sdc' in ansible_devices and (ansible_devices['sdc'].size | regex_replace(' GB', '') | float) >= 100"
+        fail_msg: "Disk sdc does not exist or is smaller than 100GB."
+        success_msg: "Requirement passed: Disk sdc exists and is at least 100GB."
+    
+    - name: Check if Disk sdd exists and has minimum size of 100GB
+      ansible.builtin.assert:
+        that: "'sdd' in ansible_devices and (ansible_devices['sdd'].size | regex_replace(' GB', '') | float) >= 100"
+        fail_msg: "Disk sdd does not exist or is smaller than 100GB."
+        success_msg: "Requirement passed: Disk sdd exists and is at least 100GB."
+    
+    - name: Check if Memory is at least 10GB
+      ansible.builtin.assert:
+        that: "ansible_memtotal_mb >= 10000"
+        fail_msg: "Memory is less than 10GB."
+        success_msg: "Requirement passed: Memory is at least 10GB."
+    
+    - name: Check if there are at least 2 CPUs
+      ansible.builtin.assert:
+        that: "ansible_processor_vcpus >= 2"
+        fail_msg: "Fewer than 2 CPUs are configured."
+        success_msg: "Requirement passed: At least 2 CPUs are configured."
+  when: execute_baseline == True
+
+  rescue:
+    - name: Capture error message from failed assert
+      set_fact:
+        error_msg: "{{ ansible_failed_result.msg }}"
+
+
+
+
+
+
+
+
+
