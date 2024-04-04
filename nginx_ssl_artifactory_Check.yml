@@ -1,0 +1,249 @@
+
+---
+- name: Check Artifactory token expiry
+  block:
+    - name: Deploy Expiery extractor 
+      ansible.builtin.copy:
+        src: token.sh
+        dest: /usr/bin/token.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Ensure jq is installed
+      ansible.builtin.yum:
+        name: jq
+        state: present
+
+    - name: Read Artifactory Content
+      slurp:
+        src: /etc/yum.repos.d/artifactory.repo
+      register: repo_content
+
+    - name: Decode artifactory content
+      set_fact:
+        repo_file_content: "{{ repo_content['content'] | b64decode }}"
+
+    - name: Parse token
+      set_fact:
+        jwt_token: "{{ repo_file_content | regex_search('baseurl=https://[^:]+:([^@]+)@', '\\1') | first }}"
+
+    - name: Extract the expiry date for Artifactory token
+      shell: /usr/bin/token.sh "{{ jwt_token }}"
+      register: token_expiry_date
+
+    - name: Get days until artifactory token expires
+      shell: >
+        echo $(( ($(date -d "$(date -d '{{ token_expiry_date.stdout }}' '+%Y-%m-%d')" +%s) - $(date +%s) ) / 86400 ))
+      register: days_until_token_expire
+      delegate_to: localhost
+
+    - name: Debug days until token expires
+      debug:
+        msg: "Days until token expires: {{ days_until_token_expire.stdout }}"
+
+    - name: Set days until expiry from shell output
+      set_fact:
+        days_until_expiry: "{{ days_until_token_expire.stdout | int }}"
+
+    - name: Fail if token is expiring in less than 5 days
+      fail:
+        msg: "Artifactory token is expiring in less than {{ days_until_expiry }} days on {{ inventory_hostname }}"
+      when: days_until_expiry | int < 5
+
+
+- name: Check SSL certificate expiry
+  block: 
+    - name: Retrieve SSL certificate expiry date
+      ansible.builtin.shell: >
+        openssl s_client -connect {{ inventory_hostname }}:443 -servername {{ inventory_hostname }} </dev/null 2>/dev/null | openssl x509 -noout -enddate
+      register: ssl_expiry_result
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: Parse and calculate days until SSL certificate expiry
+      set_fact:
+        ssl_expiry_date: "{{ ssl_expiry_result.stdout | regex_findall('notAfter=(.*)') | first }}"
+
+    - name: Debug expiry date
+      debug:
+        msg: "SSL expiry date: {{ ssl_expiry_date }}"
+
+    - name: Calculate days until SSL certificate expires 
+      ansible.builtin.shell: >
+        echo $(( ($(date -d "{{ ssl_expiry_date }}" +%s) - $(date -u +%s)) / 86400 ))
+      register: days_until_expiry_shell
+      delegate_to: localhost
+
+    - name: Set days until expiry from shell output
+      set_fact:
+        days_until_expiry: "{{ days_until_expiry_shell.stdout | int }}"
+
+    - name: Debug days until SSL certificate expires
+      debug:
+        msg: "Days until SSL certificate expires: {{ days_until_expiry }}"
+
+    - name: Fail if SSL certificate is expiring less than 30 days 
+      fail:
+        msg: "SSL certificate expires in less than ({{ days_until_expiry }} days on {{ inventory_hostname }})."
+      when: days_until_expiry | int < 30
+
+
+- name: Validate Gateway and Nginx Configuration
+  block: 
+    - name: Check gateway URI response
+      uri:
+        url: "https://{{ inventory_hostname }}"
+        method: GET
+        return_content: yes
+        status_code: [200, 502, 403] 
+        validate_certs: false 
+      register: result
+      delegate_to: localhost
+
+    - name: Fail if gateway is not responding correctly
+      become: true 
+      fail:
+        msg: "{{ inventory_hostname }} returned a 502 status code with content: {{ result.content }}"
+      when:
+        - result is defined
+        - result.status == 502
+      delegate_to: localhost
+
+    - name: Validate Nginx configuration
+      become: true 
+      ansible.builtin.command: nginx -t
+---
+- name: Check Artifactory token expiry
+  block:
+    - name: Deploy Expiery extractor 
+      ansible.builtin.copy:
+        src: token.sh
+        dest: /usr/bin/token.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Ensure jq is installed
+      ansible.builtin.yum:
+        name: jq
+        state: present
+
+    - name: Read Artifactory Content
+      slurp:
+        src: /etc/yum.repos.d/artifactory.repo
+      register: repo_content
+
+    - name: Decode artifactory content
+      set_fact:
+        repo_file_content: "{{ repo_content['content'] | b64decode }}"
+
+    - name: Parse token
+      set_fact:
+        jwt_token: "{{ repo_file_content | regex_search('baseurl=https://[^:]+:([^@]+)@', '\\1') | first }}"
+
+    - name: Extract the expiry date for Artifactory token
+      shell: /usr/bin/token.sh "{{ jwt_token }}"
+      register: token_expiry_date
+
+    - name: Get days until artifactory token expires
+      shell: >
+        echo $(( ($(date -d "$(date -d '{{ token_expiry_date.stdout }}' '+%Y-%m-%d')" +%s) - $(date +%s) ) / 86400 ))
+      register: days_until_token_expire
+      delegate_to: localhost
+
+    - name: Debug days until token expires
+      debug:
+        msg: "Days until token expires: {{ days_until_token_expire.stdout }}"
+
+    - name: Set days until expiry from shell output
+      set_fact:
+        days_until_expiry: "{{ days_until_token_expire.stdout | int }}"
+
+    - name: Fail if token is expiring in less than 5 days
+      fail:
+        msg: "Artifactory token is expiring in less than {{ days_until_expiry }} days on {{ inventory_hostname }}"
+      when: days_until_expiry | int < 5
+
+
+- name: Check SSL certificate expiry
+  block: 
+    - name: Retrieve SSL certificate expiry date
+      ansible.builtin.shell: >
+        openssl s_client -connect {{ inventory_hostname }}:443 -servername {{ inventory_hostname }} </dev/null 2>/dev/null | openssl x509 -noout -enddate
+      register: ssl_expiry_result
+      delegate_to: localhost
+      ignore_errors: true
+
+    - name: Parse and calculate days until SSL certificate expiry
+      set_fact:
+        ssl_expiry_date: "{{ ssl_expiry_result.stdout | regex_findall('notAfter=(.*)') | first }}"
+
+    - name: Debug expiry date
+      debug:
+        msg: "SSL expiry date: {{ ssl_expiry_date }}"
+
+    - name: Calculate days until SSL certificate expires 
+      ansible.builtin.shell: >
+        echo $(( ($(date -d "{{ ssl_expiry_date }}" +%s) - $(date -u +%s)) / 86400 ))
+      register: days_until_expiry_shell
+      delegate_to: localhost
+
+    - name: Set days until expiry from shell output
+      set_fact:
+        days_until_expiry: "{{ days_until_expiry_shell.stdout | int }}"
+
+    - name: Debug days until SSL certificate expires
+      debug:
+        msg: "Days until SSL certificate expires: {{ days_until_expiry }}"
+
+    - name: Fail if SSL certificate is expiring less than 30 days 
+      fail:
+        msg: "SSL certificate expires in less than ({{ days_until_expiry }} days on {{ inventory_hostname }})."
+      when: days_until_expiry | int < 30
+
+
+- name: Validate Gateway and Nginx Configuration
+  block: 
+    - name: Check gateway URI response
+      uri:
+        url: "https://{{ inventory_hostname }}"
+        method: GET
+        return_content: yes
+        status_code: [200, 502, 403] 
+        validate_certs: false 
+      register: result
+      delegate_to: localhost
+
+    - name: Fail if gateway is not responding correctly
+      become: true 
+      fail:
+        msg: "{{ inventory_hostname }} returned a 502 status code with content: {{ result.content }}"
+      when:
+        - result is defined
+        - result.status == 502
+      delegate_to: localhost
+
+    - name: Validate Nginx configuration
+      become: true 
+      ansible.builtin.command: nginx -t
+      register: nginx_test_result
+
+    - name: Show test results
+      ansible.builtin.debug:
+        msg: "{{ nginx_test_result.stdout_lines }}"
+
+    - name: Fail if Nginx configuration test fails
+      fail:
+        msg: "Nginx configuration test failed: {{ nginx_test_result.stderr_lines }}"
+      when: nginx_test_result.rc != 0
+      register: nginx_test_result
+
+    - name: Show test results
+      ansible.builtin.debug:
+        msg: "{{ nginx_test_result.stdout_lines }}"
+
+    - name: Fail if Nginx configuration test fails
+      fail:
+        msg: "Nginx configuration test failed: {{ nginx_test_result.stderr_lines }}"
+      when: nginx_test_result.rc != 0
