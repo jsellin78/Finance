@@ -1,5 +1,4 @@
 ---
-
 - name: Perform system checks
   block: 
     - name: Check if Disk sda exists and has minimum size of 35GB
@@ -44,6 +43,9 @@
       set_fact:
         error_msg: "{{ ansible_failed_result.msg }}"
 
+    - name: Fail the playbook 
+      ansible.builtin.fail:
+        msg: "Failed on {{ inventory_hostname }} with error: {{ error_msg }}"
 
 
 
